@@ -34,6 +34,9 @@ public class ServerRMI extends java.rmi.server.UnicastRemoteObject implements
 
 	// Methods
 	public void startTest() {
+		
+		
+		
 		System.out.println("Heel goed");
 
 	}
