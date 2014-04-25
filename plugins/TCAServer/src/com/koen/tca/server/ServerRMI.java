@@ -5,9 +5,15 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import com.google.inject.Inject;
+
 public class ServerRMI extends java.rmi.server.UnicastRemoteObject implements
 		RmiServerInterface {
-
+	
+	@Inject
+	DragonXInvoker dragonXInvoker;
+	
+	
 	/**
 	 * 
 	 */
@@ -34,11 +40,8 @@ public class ServerRMI extends java.rmi.server.UnicastRemoteObject implements
 
 	// Methods
 	public void startTest() {
-		
-		
-		
-		System.out.println("Heel goed");
-
+		System.out.println("Starting test");
+		dragonXInvoker.invoke();
 	}
 
 	public void stopTest() {

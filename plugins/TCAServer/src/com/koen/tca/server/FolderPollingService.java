@@ -2,6 +2,8 @@ package com.koen.tca.server;
 
 import java.io.File;
 
+import org.eclipse.emf.common.util.URI;
+
 /**
  * Returns a collection of files.
  * 
@@ -18,10 +20,10 @@ public class FolderPollingService {
 
 	public void poll() {
 
-		if(scriptPath == null){
-			return; // Can poll unknown directory. 
+		if (scriptPath == null) {
+			return; // Can poll unknown directory.
 		}
-		
+
 		final File rootFile = new File(scriptPath);
 		if (rootFile.isDirectory()) {
 
@@ -41,7 +43,11 @@ public class FolderPollingService {
 	public void setScriptPath(String scriptPath) {
 		this.scriptPath = scriptPath;
 	}
-	
-	
-	
+
+	public URI fileAsURI(File file) {
+		URI fileAsURI = URI.createFileURI(file.getAbsolutePath());
+		return fileAsURI;
+
+	}
+
 }

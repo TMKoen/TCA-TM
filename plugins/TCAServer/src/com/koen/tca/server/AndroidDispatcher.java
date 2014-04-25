@@ -1,7 +1,11 @@
 package com.koen.tca.server;
 
 import com.netxforge.netxtest.dragonX.Action;
+import com.netxforge.netxtest.dragonX.DragonXPackage;
 import com.netxforge.netxtest.dragonX.Parameter;
+import com.netxforge.netxtest.dragonX.ParameterSet;
+import com.netxforge.netxtest.dragonX.UE;
+import com.netxforge.netxtest.dragonX.UEMetaObject;
 import com.netxforge.netxtest.interpreter.IExternalDispatcher;
 
 /**
@@ -14,11 +18,25 @@ public class AndroidDispatcher implements IExternalDispatcher {
 		@Override
 		public void dispatch(Action action) {
 
-			System.out.println("Dispatching Action: " + action.getAction());
+			System.out.println("Dispatching Action: " + action.getName());
+			ParameterSet parameterSet = action.getParameterSet();
+			for (Parameter p : parameterSet.getParameters()) {
 
-			for (Parameter p : action.getParameters()) {
-				System.out.println(" parameter: " + p.getName() + " value:"
-						+ p.getValue());
+				if (p.eIsSet(DragonXPackage.Literals.PARAMETER__VALUE)) {
+					System.out.println(" parameter: " + p.getName() + " value:"
+							+ p.getValue());
+				} else if (p.eIsSet(DragonXPackage.Literals.PARAMETER__UE_REF)) {
+					System.out.println(" parameter: " + p.getName() + " UE:"
+							+ p.getUeRef());
+
+					// UE Parameters....
+
+					UE ue = p.getUeRef();
+					for (UEMetaObject ueObject : ue.getMeta()) {
+						System.out.println(" UE param: " + ueObject.getParams()
+								+ ueObject.getParamValue());
+					}
+				}
 			}
 		}
 
@@ -26,7 +44,7 @@ public class AndroidDispatcher implements IExternalDispatcher {
 
 	@Override
 	public void dispatch(Action action) {
-		// DISPATCH THE ACTION to
+		DEFAULT.dispatch(action);
 	}
 
 }

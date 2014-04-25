@@ -14,4 +14,9 @@ public interface RmiServerInterface extends Remote {
 	public void stopTest() throws RemoteException;
 
 	public void addTestCase(String testCase) throws RemoteException;
+
+	public void startServer();
+
+	public void stopServer();
+
 }
