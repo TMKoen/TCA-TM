@@ -1,5 +1,6 @@
 package com.koen.tca.server;
 
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -18,7 +19,6 @@ public class ServerRMI extends java.rmi.server.UnicastRemoteObject implements
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	// Data members
 	private String serverAdres;
 	private final int serverPort = 1099; // The default RMI server port to
 											// communicate with the client
@@ -26,7 +26,6 @@ public class ServerRMI extends java.rmi.server.UnicastRemoteObject implements
 	private final String serverRMI = "ServerRMI";
 	private Registry registry;
 
-	// Constructors
 	public ServerRMI() throws RemoteException {
 		super();
 		try {
@@ -38,7 +37,6 @@ public class ServerRMI extends java.rmi.server.UnicastRemoteObject implements
 
 	}
 
-	// Methods
 	public void startTest() {
 		System.out.println("Starting test");
 		dragonXInvoker.invoke();
@@ -76,5 +74,36 @@ public class ServerRMI extends java.rmi.server.UnicastRemoteObject implements
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public int UploadTestCase(String testSet, ObjectOutputStream testCase)
+			throws RemoteException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void StartScanUE() throws RemoteException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public int StopScanUE() throws RemoteException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void startTestSet(String testSet) throws RemoteException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void StartTestCase(String testCase) throws RemoteException {
+		// TODO Auto-generated method stub
+		
 	}
 }

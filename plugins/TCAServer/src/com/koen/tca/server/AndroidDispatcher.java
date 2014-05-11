@@ -15,10 +15,9 @@ public class AndroidDispatcher implements IExternalDispatcher {
 
 	IExternalDispatcher DEFAULT = new IExternalDispatcher() {
 
-		@Override
 		public void dispatch(Action action) {
 
-			System.out.println("Dispatching Action: " + action.getName());
+			System.out.println("Dispatching Action: " + action.GetName());
 			ParameterSet parameterSet = action.getParameterSet();
 			for (Parameter p : parameterSet.getParameters()) {
 

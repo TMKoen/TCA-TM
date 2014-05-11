@@ -3,17 +3,21 @@ package com.koen.tca.server;
 import com.google.inject.Inject;
 
 /**
- * Server side main method.
+ * This class is the starting point for the server application.
+ * For the Equinox - OSGI framework, there are two methods necessary:
+ * Start () and Stop ()
+ * start () is the main method where the application begins.
+ * 
  */
 public class TCAServer {
 
 	@Inject
-	RmiServerInterface serverRMI;
+	TestServer testServer;
 
 	public void start() {
 		try {
 			// Start the server, listen for RMI requests. 
-			serverRMI.startServer();
+			testServer.startServer();
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -24,7 +28,7 @@ public class TCAServer {
 	public void stop(){
 		try {
 			// Stop the server. 
-			serverRMI.stopServer();
+			testServer.stopServer();
 			
 		} catch (Exception e) {
 			e.printStackTrace();
