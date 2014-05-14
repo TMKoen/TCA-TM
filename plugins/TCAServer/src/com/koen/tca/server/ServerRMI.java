@@ -9,7 +9,7 @@ import java.rmi.registry.Registry;
 import com.google.inject.Inject;
 
 public class ServerRMI extends java.rmi.server.UnicastRemoteObject implements
-		RmiServerInterface {
+		IRemoteServer {
 	
 	@Inject
 	DragonXInvoker dragonXInvoker;
