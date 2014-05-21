@@ -6,12 +6,12 @@ public class UEInfo {
 	private String name;
 	private String number;
 	private String ipAddress;
-	
-	public UEInfo () {
-		
+
+	public UEInfo() {
+
 	}
-	
-	public UEInfo (String imei, String name, String number) {
+
+	public UEInfo(String imei, String name, String number) {
 		this.imei = imei;
 		this.name = name;
 		this.number = number;
@@ -40,12 +40,19 @@ public class UEInfo {
 	public void setNumber(String number) {
 		this.number = number;
 	}
-	
-	public void setIPAddress (String ipAddress) {
+
+	public void setIPAddress(String ipAddress) {
 		this.ipAddress = ipAddress;
 	}
-	
-	public String getIPAddress () {
+
+	public String getIPAddress() {
 		return ipAddress;
 	}
+
+	@Override
+	public String toString() {
+		return "IMEI: " + this.getImei() + ", Telephone number: "
+				+ this.getNumber() + "\n";
+	}
+
 }

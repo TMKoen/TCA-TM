@@ -63,7 +63,10 @@ public class DragonXInvoker {
 	 * AST. This will emmit actions on the specified {@link IExternalDispatcher}
 	 */
 	public void invoke() {
-
+		
+		// TODO Create a runnable. 
+		
+		
 		try {
 
 			// Get all the files in the directory.

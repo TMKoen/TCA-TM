@@ -1,13 +1,14 @@
-package com.koen.tca.server;
+package com.koen.tca.server.state;
 
-public class ServerStateIdle implements ServerState {
+
+public class ServerStateIdle extends AbstractServerState  {
 
 	public ServerStateIdle () {
 		
 	}
 	
 	@Override
-	public void ChangeState(ServerEvents serverEvent, ServerStateMachine context) {
+	public void changeState(ServerEvents serverEvent, ServerStateMachine context) {
 		
 		
 		switch (serverEvent){
@@ -20,7 +21,7 @@ public class ServerStateIdle implements ServerState {
 	}
 
 	@Override
-	public void ActivateState() {
+	public void activateState() {
 		
 		
 	}

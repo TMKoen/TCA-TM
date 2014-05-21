@@ -34,7 +34,7 @@ public interface IRemoteServer extends Remote {
 	 * @return: -1 if there where no UE's available. 0 if there are UE's
 	 * @throws RemoteException: if remote server is not accessible
 	 */
-	public int StopDetect (ICallBackClient callBackClient) throws RemoteException;
+	public int stopDetect (ICallBackClient callBackClient) throws RemoteException;
 	
 	/**
 	 *  Place the server in the 'Test' state and activate the test
@@ -48,7 +48,7 @@ public interface IRemoteServer extends Remote {
 	 * @param testCase
 	 * @throws RemoteException
 	 */
-	public void StartTestCase (ICallBackClient callBackClient, String testCase) throws RemoteException;
+	public void startTestCase (ICallBackClient callBackClient, String testCase) throws RemoteException;
 	
 	
 	/**

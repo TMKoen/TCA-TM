@@ -32,6 +32,7 @@ public class TCAServerActivator implements BundleActivator {
 	public void start(BundleContext context) throws Exception {
 		INSTANCE = this;
 		rmiServer = this.getInjector().getInstance(TCAServer.class);
+		rmiServer.start();
 
 	}
 

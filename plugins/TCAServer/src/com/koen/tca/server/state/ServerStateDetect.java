@@ -1,22 +1,32 @@
-package com.koen.tca.server;
+package com.koen.tca.server.state;
 
 import java.io.IOException;
 
-public class ServerStateDetect implements ServerState {
+import com.koen.tca.server.AndroidDetector;
+
+
+/**
+ * The  
+ * 
+ */
+public class ServerStateDetect extends AbstractServerState {
 
 	protected AndroidDetector androidDetector;
 	final String threadName = "Detect Thread";
 	
-	public ServerStateDetect () {
+	public ServerStateDetect() {
+		
 		try {
 			androidDetector = new AndroidDetector (10);
+			androidDetector.setDetectResult(DetectResult.SINGLETON());
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public void ChangeState(ServerEvents serverEvent, ServerStateMachine context) {
+	public void changeState(ServerEvents serverEvent, ServerStateMachine context) {
 
 		switch (serverEvent){
 		case STOP_DETECT:
@@ -24,7 +34,7 @@ public class ServerStateDetect implements ServerState {
 			androidDetector = null;		// Release this resource.. Maybe unnecessary, because when changing States, the old state (this state) is also released.
 			
 			// server goes to the wait state. UE's are present.
-			context.setState(new ServerStateWait());
+			context.setState(new ServerStateReady());
 			break;
 		case STOP_DETECT_NO_UE:
 			
@@ -40,10 +50,12 @@ public class ServerStateDetect implements ServerState {
 	}
 
 	@Override
-	public void ActivateState() {
+	public void activateState() {
 		// TODO Activate a new Thread. run() is also in the class AndroidDetector.
 		androidDetector.startThread();
-	
+		androidDetector.setCallBack(getCallBack());
 		// Returns to the client while the new thread is running.
 	}
+
+	
 }

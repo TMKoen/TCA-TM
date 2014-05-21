@@ -5,9 +5,10 @@ import com.google.inject.Module;
 import com.koen.tca.server.AndroidDispatcher;
 import com.koen.tca.server.DragonXInvoker;
 import com.koen.tca.server.FolderPollingService;
-import com.koen.tca.server.RmiServerInterface;
-import com.koen.tca.server.ServerRMI;
+import com.koen.tca.server.IRemoteServer;
 import com.koen.tca.server.TCAServer;
+import com.koen.tca.server.TestServer;
+import com.koen.tca.server.state.ServerStateMachine;
 import com.netxforge.netxtest.interpreter.IExternalDispatcher;
 
 public class TCAModule implements Module {
@@ -16,18 +17,22 @@ public class TCAModule implements Module {
 	public void configure(Binder binder) {
 
 		// Bindings for the TCAServer.
-		
-		
+
 		/**
-		 * Binds our server. 
+		 * Binds our server.
 		 */
 		binder.bind(TCAServer.class);
-		
+
 		/**
 		 * A service which provides Remote Method Invokation facilities to
 		 * interact with the TCA Server.
 		 */
-		binder.bind(RmiServerInterface.class).to(ServerRMI.class);
+		binder.bind(IRemoteServer.class).to(TestServer.class);
+
+		/**
+		 * The state of our server. 
+		 */
+		binder.bind(ServerStateMachine.class);
 
 		/**
 		 * A service for invoking an interpreter with a given dragonX script.

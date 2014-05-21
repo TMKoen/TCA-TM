@@ -1,13 +1,14 @@
-package com.koen.tca.server;
+package com.koen.tca.server.state;
 
-public class ServerStateWait implements ServerState{
 
-	public ServerStateWait () {
+public class ServerStateReady extends AbstractServerState {
+
+	public ServerStateReady () {
 		
 	}
 
 	@Override
-	public void ChangeState(ServerEvents serverEvent, ServerStateMachine context) {
+	public void changeState(ServerEvents serverEvent, ServerStateMachine context) {
 
 		switch (serverEvent) {
 		case START_DETECT:
@@ -22,15 +23,14 @@ public class ServerStateWait implements ServerState{
 			context.setState(new ServerStateTest());
 			break;
 		default:
-			// the other serverEvents are not valid in the 'Wait' state
+			// the other serverEvents are not valid in the 'Ready' state
 			break;
 		}
 		
 	}
 
 	@Override
-	public void ActivateState() {
-		// TODO Auto-generated method stub
+	public void activateState() {
 		
 	}
 	
