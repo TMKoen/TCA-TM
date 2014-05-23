@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">TCAAndroid</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="start_button">Start</string>
+    <string name="stop_button">Stop</string>
+    <string name="Welcome">Before you push on the start button, be sure that the testserver is running. After the server is founded, the Android is ready for action.</string>
+    <string name="find_server">Find Server</string>
+    <string name="stop_testing">Stop testing</string>
+    <string name="server_ipaddress">IP address Server</string>
+
+</resources>

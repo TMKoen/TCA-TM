@@ -8,7 +8,6 @@ import com.netxforge.netxtest.dragonX.ParameterSet;
 import com.netxforge.netxtest.dragonX.UE;
 import com.netxforge.netxtest.dragonX.UEMetaObject;
 import com.netxforge.netxtest.dragonX.UEPARAMS;
-import com.netxforge.netxtest.interpreter.IExternalDispatcher;
 
 /**
  * A dispatcher which deals with DragonX Test actions.

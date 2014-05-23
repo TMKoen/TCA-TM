@@ -14,7 +14,6 @@ import org.eclipse.xtext.util.CancelIndicator;
 import com.google.inject.Inject;
 import com.netxforge.netxtest.dragonX.DragonX;
 import com.netxforge.netxtest.interpreter.DragonXInterpreter;
-import com.netxforge.netxtest.interpreter.IExternalDispatcher;
 
 /**
  * A service for calling the Dragon X Interpreter. Injects a Factory for

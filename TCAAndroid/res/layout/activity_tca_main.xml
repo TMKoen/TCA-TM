@@ -1,0 +1,58 @@
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#3322ff"
+        android:orientation="vertical"
+        tools:context="com.koen.tca.android.TcaMainActivity" >
+
+        <TextView
+            android:id="@+id/textView_welcome"
+            android:layout_width="253dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="25dp"
+            android:layout_marginTop="30dp"
+            android:padding="5dp"
+            android:text="@string/Welcome" />
+        
+        <Button
+            android:id="@+id/button_find_server"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="#00aa00"
+            android:text="@string/find_server" />
+
+        <Button
+            android:id="@+id/button_stop_testing"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="#aa0000"
+            android:text="@string/stop_testing" />
+        
+        <FrameLayout
+            style="@style/AppTheme"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:background="#ffffff"
+            android:padding="5dp" >
+
+              <TextView
+                  android:id="@+id/textView_server_ipaddress"
+                  android:layout_width="253dp"
+                  android:layout_height="wrap_content"
+                  android:layout_gravity="center_horizontal"
+                  android:layout_marginBottom="25dp"
+                  android:layout_marginTop="30dp"
+                  android:padding="5dp"
+                  android:text="@string/server_ipaddress" />
+
+</FrameLayout>
+        
+    </LinearLayout>
+
+
