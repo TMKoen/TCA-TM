@@ -11,6 +11,16 @@ import com.koen.tca.server.TCAServer;
 import com.koen.tca.server.TestServer;
 import com.koen.tca.server.state.ServerStateMachine;
 
+/**
+ * Binds the classes and interfaces necessary for Google Guice dependency injection.
+ * <p>
+ * The <code>TCAModule</code> class implements the <code>Module</code> interface from Google Guice.
+ * It has one implemented method: {@link Module configure(Binder binder)}
+ * @version
+ * @author Koen Nijmeijer, Christophe Bouhier
+ * @see Module
+ * 
+ */
 public class TCAModule implements Module {
 
 	@Override
@@ -19,7 +29,7 @@ public class TCAModule implements Module {
 		// Bindings for the TCAServer.
 
 		/**
-		 * Binds our server.
+		 * Binds the TCAServer.
 		 */
 		binder.bind(TCAServer.class);
 
@@ -48,7 +58,7 @@ public class TCAModule implements Module {
 		binder.bind(FolderPollingService.class);
 
 		/**
-		 * A service which can dispatch DragonX Action's
+		 * A service which can dispatch DragonX Action's.
 		 */
 		binder.bind(IExternalDispatcher.class).to(AndroidDispatcher.class);
 

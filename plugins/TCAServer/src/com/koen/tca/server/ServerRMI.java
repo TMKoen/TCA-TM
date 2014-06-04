@@ -77,20 +77,20 @@ public class ServerRMI extends java.rmi.server.UnicastRemoteObject implements
 	}
 
 	@Override
-	public int UploadTestCase(String testSet, ObjectOutputStream testCase)
+	public int uploadTestCase(String testSet, ObjectOutputStream testCase)
 			throws RemoteException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
-	public void StartScanUE() throws RemoteException {
+	public void startScanUE() throws RemoteException {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public int StopScanUE() throws RemoteException {
+	public int stopScanUE() throws RemoteException {
 		// TODO Auto-generated method stub
 		return 0;
 	}
@@ -102,7 +102,7 @@ public class ServerRMI extends java.rmi.server.UnicastRemoteObject implements
 	}
 
 	@Override
-	public void StartTestCase(String testCase) throws RemoteException {
+	public void startTestCase(String testCase) throws RemoteException {
 		// TODO Auto-generated method stub
 		
 	}

@@ -9,6 +9,6 @@
     <string name="Welcome">Before you push on the start button, be sure that the testserver is running. After the server is founded, the Android is ready for action.</string>
     <string name="find_server">Find Server</string>
     <string name="stop_testing">Stop testing</string>
-    <string name="server_ipaddress">IP address Server</string>
+    <string name="server_ipaddress">0</string>
 
 </resources>

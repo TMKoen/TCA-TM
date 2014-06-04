@@ -1,11 +1,17 @@
-package com.koen.tca.android;
+package com.koen.tca.android.state;
 
-public class AndroidStateExpose implements AndroidState {
+import android.os.Handler;
+import android.os.Looper;
+
+import com.koen.tca.android.state.thread.ThreadExpose;
+
+public class AndroidStateExpose implements IAndroidState {
 
 	private ThreadExpose exposeThread;
 	
 	public AndroidStateExpose () {
-		exposeThread = new ServerExpose ();
+		Handler mainHandler = new Handler (Looper.getMainLooper());
+		exposeThread = new ThreadExpose (mainHandler);
 	}
 	
 	@Override
@@ -27,10 +33,10 @@ public class AndroidStateExpose implements AndroidState {
 
 	@Override
 	public void activateState() {
-		
 		// Start a new Thread that runs the state: Expose
 		exposeThread.startThread();
 
+		
 		// Returns to the client while the new thread is running.
 	}
 
@@ -40,7 +46,7 @@ public class AndroidStateExpose implements AndroidState {
 	@Override
 	public String toString () {
 		
-		return "Expose";
+		return "Android Expose";
 		
 	}
 }

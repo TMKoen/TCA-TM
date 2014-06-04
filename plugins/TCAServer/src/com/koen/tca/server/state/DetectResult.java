@@ -6,12 +6,17 @@ import java.util.List;
 import com.koen.tca.server.UEInfo;
 
 /**
- * Holds the result of the UE Detection phase.
+ * Holds the result of the UE 'Detection' state.
+ * 
  */
 public class DetectResult {
 
 	private static DetectResult self;
 
+	private DetectResult () {
+		// Only accessible by the class itself
+		
+	}
 	public static DetectResult SINGLETON() {
 
 		if (self == null) {

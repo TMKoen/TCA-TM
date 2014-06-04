@@ -5,9 +5,15 @@ import java.io.IOException;
 import com.koen.tca.server.AndroidDetector;
 
 
+
 /**
- * The  
+ * class that represents the state 'Detect'.
+ * It inherent the abstract class <code>AbstractServerState</code> which in turn inherent from 
+ * the interface <code> IServerState </code>.
  * 
+ * @author Koen Nijmeijer
+ * @see AbstractServerState
+ * @see IServerState
  */
 public class ServerStateDetect extends AbstractServerState {
 
@@ -49,6 +55,7 @@ public class ServerStateDetect extends AbstractServerState {
 		
 	}
 
+	
 	@Override
 	public void activateState() {
 		// TODO Activate a new Thread. run() is also in the class AndroidDetector.

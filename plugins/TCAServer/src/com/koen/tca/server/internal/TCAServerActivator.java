@@ -14,54 +14,92 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.koen.tca.server.TCAServer;
 
+/**
+ * OSGI Activator class that starts and stops the <code>TCAServer</code> class. 
+ * <p>
+ * This activator class implements the <code>bundleActivator</code> interface<br>
+ * 
+ * 
+ * @version
+ * @author Koen Nijmeijer, Christophe Bouhier
+ * @see BundleActivator
+ * @see 
+ *
+ */
 public class TCAServerActivator implements BundleActivator {
 
+	// Initialize the key string for the injector object (key/value pair)
 	public static final String COM_NETXFORGE_NETXTEST_DRAGONX = "com.netxforge.netxtest.DragonX";
 
+	// Creates a error logger for the TCAServerActivator
 	private static final Logger logger = Logger
 			.getLogger(TCAServerActivator.class);
 
+	// Singleton object instance
 	private static TCAServerActivator INSTANCE;
 
+	// create a key/value Hash collection to store the Dependency injector object.
 	private Map<String, Injector> injectors = Collections.synchronizedMap(Maps
 			.<String, Injector> newHashMapWithExpectedSize(1));
 
-	private TCAServer rmiServer;
+	// 
+	private TCAServer server;
 
+	/**
+	 * Starts the Server bundle through the <code>TCAServer</code> class.
+	 * @version
+	 * @author Koen Nijmeijer, Christophe Bouhier
+	 * @see TCAServer
+	 * @throws Exception
+	 */
 	@Override
 	public void start(BundleContext context) throws Exception {
 		INSTANCE = this;
-		rmiServer = this.getInjector().getInstance(TCAServer.class);
-		rmiServer.start();
+		server = this.getInjector().getInstance(TCAServer.class);
 
+		server.start();
+		
 	}
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
-		rmiServer.stop();
+		server.stop();
+		INSTANCE = null;
 	}
 
+	/**
+	 * Returns the instance of this Singleton object
+	 * @return
+	 */
 	public static TCAServerActivator getInstance() {
 		return INSTANCE;
 	}
 
 	/**
-	 * Create a Dependency Injection {@link Injector} The inject binds the XText
-	 * module for the given grammar if it matches
+	 * Create a Dependency Injection {@link Injector}. 
+	 * <p>
+	 * The inject binds the XText module for the given grammar if it matches
 	 * {@value #COM_NETXFORGE_NETXTEST_DRAGONX}. It also binds other services
 	 * from this class specified in the {@link TCAModule}
 	 * 
-	 * @param language
-	 * @return
+	 * @param language 
+	 * @return a new created injector
+	 * @throws Exception
+	 * @throws RuntimeException
 	 */
 	protected Injector createInjector(String language) {
 		try {
-			Module runtimeModule = getRuntimeModule(language);
+			// Gets the RunTimeModule and the TCAModule and merges them together to one Module.
+			Module runtimeModule = getRuntimeModule();
 			Module sharedStateModule = getTCAModule();
 			Module mergedModule = Modules2.mixin(runtimeModule,
 					sharedStateModule);
+
+			// Creates a new injector with this merged module.
 			return Guice.createInjector(mergedModule);
 		} catch (Exception e) {
+			
+			// Log the Exception and throws a RuntimeException
 			logger.error("Failed to create injector for " + language);
 			logger.error(e.getMessage(), e);
 			throw new RuntimeException("Failed to create injector for "
@@ -70,27 +108,49 @@ public class TCAServerActivator implements BundleActivator {
 	}
 
 	/**
-	 * 
+	 * Gets the Dependency injection from the key value: {@value #COM_NETXFORGE_NETXTEST_DRAGONX}. 
+	 * <p>
+	 * Gets the injector from the injectors Map. If this Map is empty, make a new
+	 * injector and stores it in the Map.
 	 * @param language
-	 * @return
+	 * @return	The injector
 	 */
 	public Injector getInjector() {
 		String language = COM_NETXFORGE_NETXTEST_DRAGONX;
+
+		// Make it Thread safe: only one Thread can access the injectors field.
 		synchronized (injectors) {
+
+			// Gets the injector stored in the Map hash-collector with the key name equals language.
+			// If the injectors Map is empty, add a new key/value pair in the injectors Map and return the new injector.
 			Injector injector = injectors.get(language);
 			if (injector == null) {
+				// Creates a new Injector and put it in the Map (injectors) collection
+				// There can be only one injector object in this Map.
 				injectors.put(language, injector = createInjector(language));
 			}
 			return injector;
 		}
 	}
 
+	/**
+	 * Gets the TCAModule module.
+	 * <p> 
+	 * @return the TCAModule module
+	 * @see TCAModule
+	 */
 	private Module getTCAModule() {
 		return new TCAModule();
 	}
 
-	protected Module getRuntimeModule(String grammar) {
+	/**
+	 * Gets the DragonXRuntimeModule. 
+	 * <p>
+	 * @param grammar string
+	 * @return the DragonXRuntimeModule module
+	 * @see DragonXRuntimeModule
+	 */
+	private Module getRuntimeModule() {
 		return new com.netxforge.netxtest.DragonXRuntimeModule();
-
 	}
 }

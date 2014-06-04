@@ -84,7 +84,7 @@ public class DragonXInvoker {
 						if (eObject instanceof DragonX) {
 							DragonX script = (DragonX) eObject;
 							// Setup the interpreter.
-							interpreter.setExtDispatcher(androidDispatcher);
+//							interpreter.setExtDispatcher(androidDispatcher);
 							interpreter.evaluate(script);
 						} else {
 							// invalid EMF Object, puke here.

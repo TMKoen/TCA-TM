@@ -1,16 +1,22 @@
-package com.koen.tca.android;
+package com.koen.tca.android.state;
 
 
-public class AndroidStateIdle implements AndroidState {
+
+public class AndroidStateReady implements IAndroidState {
 
 	@Override
 	public void changeState(AndroidEvents androidEvent,
 			AndroidStateMachine androidStateMachine) {
-
-		switch (androidEvent){
+		
+		switch (androidEvent) {
+		case IDLE:
+			androidStateMachine.setState(new AndroidStateIdle());
+			break;
+		case START_TEST:
+			androidStateMachine.setState(new AndroidStateTest());
+			break;
 		case START_EXPOSE:
 			androidStateMachine.setState(new AndroidStateExpose());
-			break;
 		default:
 			break;
 		}
@@ -24,13 +30,12 @@ public class AndroidStateIdle implements AndroidState {
 	}
 
 	/**
-	 * Override the default toString method to return "Idle"
+	 * Override the default toString method to return "Ready"
 	 */
 	@Override
 	public String toString () {
 		
-		return "Idle";
+		return "Android Ready";
 		
 	}
-
 }

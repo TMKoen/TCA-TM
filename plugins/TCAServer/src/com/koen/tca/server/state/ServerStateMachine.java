@@ -1,6 +1,11 @@
 package com.koen.tca.server.state;
 
 /**
+ * Handels the state for the Server.
+ * 
+ * @version
+ * @author Koen Nijmeijer
+ * @see IServerState
  * 
  */
 public class ServerStateMachine {
@@ -17,6 +22,7 @@ public class ServerStateMachine {
 			presentState.changeState(serverEvent, this);
 			presentState.activateState();
 		} else {
+			// Prints the string generated in the toString () method.
 			System.out.println(this);
 		}
 	}

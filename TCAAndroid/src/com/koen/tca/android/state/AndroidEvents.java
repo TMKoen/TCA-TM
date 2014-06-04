@@ -1,6 +1,7 @@
-package com.koen.tca.android;
+package com.koen.tca.android.state;
 
 public enum AndroidEvents {
+		NO_EVENT,
 		IDLE,
 		START_EXPOSE, 
 		STOP_EXPOSE,
