@@ -1,19 +1,34 @@
 package com.koen.tca.android.state;
 
 import android.os.Handler;
-import android.os.Looper;
-
 import com.koen.tca.android.state.thread.ThreadExpose;
 
+/**
+ * represents the Expose state.
+ * <p>
+ * This class implements the <code>IAndroidState</code> interface
+ * @version
+ * @author Koen Nijmeijer
+ *
+ */
 public class AndroidStateExpose implements IAndroidState {
 
-	private ThreadExpose exposeThread;
+	private ThreadExpose threadExpose;
 	
 	public AndroidStateExpose () {
-		Handler mainHandler = new Handler (Looper.getMainLooper());
-		exposeThread = new ThreadExpose (mainHandler);
+
+		threadExpose = new ThreadExpose ();
 	}
 	
+	/**
+	 * Change the present state (Expose state) to Ready state or Idle state.
+	 * <p>
+	 * if androidStateMachine can't make a connection to the Server, than the
+	 * android goes back to the Idle state. Otherwise it goes to the Ready state.
+	 * 
+	 * @version
+	 * @author Koen Nijmeijer
+	 */
 	@Override
 	public void changeState(AndroidEvents androidEvent,
 			AndroidStateMachine androidStateMachine) {
@@ -31,17 +46,24 @@ public class AndroidStateExpose implements IAndroidState {
 
 	}
 
+	/**
+	 * Activate the state.
+	 * 
+	 * @version
+	 * @author Koen Nijmeijer
+	 */
 	@Override
-	public void activateState() {
+	public void activateState(Handler mainActivityHandler) {
 		// Start a new Thread that runs the state: Expose
-		exposeThread.startThread();
+		threadExpose.startThread(mainActivityHandler);
 
-		
-		// Returns to the client while the new thread is running.
+		// Now returns to the main thread while the new thread is running.
 	}
 
 	/**
-	 * Override the default toString method to return "Expose"
+	 * Override the default toString method to return "Android Expose"
+	 * @version
+	 * @author Koen Nijmeijer
 	 */
 	@Override
 	public String toString () {

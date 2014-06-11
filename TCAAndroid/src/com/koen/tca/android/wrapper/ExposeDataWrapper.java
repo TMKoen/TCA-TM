@@ -1,4 +1,4 @@
-package com.koen.tca.android;
+package com.koen.tca.android.wrapper;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -10,9 +10,9 @@ import java.io.OutputStreamWriter;
 
 import com.koen.tca.android.state.AndroidEvents;
 
-public class ExposeDevice {
+public class ExposeDataWrapper {
 
-	public ExposeDevice () {
+	public ExposeDataWrapper () {
 		
 	}
 	
@@ -33,7 +33,7 @@ public class ExposeDevice {
 		}
 	}
 	
-	public AndroidEvents ReceiveEvent (InputStream inStream) {	
+	public AndroidEvents receiveEvent (InputStream inStream) {	
 		BufferedReader in = new BufferedReader (new InputStreamReader(inStream));
 
 		AndroidEvents event = AndroidEvents.NO_EVENT;

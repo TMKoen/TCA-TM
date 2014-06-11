@@ -57,18 +57,21 @@ public class AndroidDetector extends RemoteUserEquipment {
 
 		try {
 			serverSocket = new ServerSocket(getPortNumber());
+
+			// sets the timeout how long the serverSocket.accepts () waits for a client
+			serverSocket.setSoTimeout(timeout); 
 		} catch (IOException e) {
 			e.printStackTrace();
+
+			// leaves this run() method.
 			return;
 		}
 
-		while (stopThread != true) { // checks if stopThread () is not been
-										// called.
+		// checks if stopThread () is not been called.
+		while (stopThread != true) { 
 
 			try {
-				serverSocket.setSoTimeout(timeout); // sets the timeout how long
-													// serverSocket.accepts ()
-													// waits for a client
+				
 				Socket clientSocket = serverSocket.accept();
 
 				inputStream = new BufferedInputStream(

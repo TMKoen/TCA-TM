@@ -116,7 +116,7 @@ public class DeviceIdentifier {
 	}
 	
 	public boolean isValidIpAddress (String ipaddr) {
-		// TODO: Check ipaddress for 3x '.' and numbers between 0 and 255
+		// TODO: Check IP-address for 3x '.' and numbers between 0 and 255
 		return true;
 	}
 	

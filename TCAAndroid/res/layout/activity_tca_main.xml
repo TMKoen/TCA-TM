@@ -3,30 +3,43 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#3322ff"
+        android:gravity="center_horizontal"
+        android:background="#ea0a8e"
         android:orientation="vertical"
         tools:context="com.koen.tca.android.TcaMainActivity" >
 
-        <TextView
-            android:id="@+id/textView_welcome"
-            android:layout_width="253dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="25dp"
-            android:layout_marginTop="30dp"
-            android:padding="5dp"
-            android:text="@string/Welcome" />
+       <ImageView
+           android:id="@+id/image"
+           android:layout_width="match_parent"
+           android:layout_height="60dp"
+           android:scaleType="fitCenter"
+           android:contentDescription="@string/logo"
+           android:src="@drawable/t_mobile_logo" />
+       
+       <TextView
+           android:id="@+id/textView_welcome"
+           android:layout_width="253dp"
+           android:layout_height="wrap_content"
+           android:layout_marginBottom="25dp"
+           android:layout_marginTop="50dp"
+           android:padding="5dp"
+           android:text="@string/Welcome" />
 
         <EditText
             android:id="@+id/EditText_ipaddr"
-            android:layout_width="253dp"
-            android:layout_height="wrap_content"
+            android:layout_width="300dp"
+            android:layout_height="30dp"
+            android:layout_marginBottom="50dp"
+            android:textAlignment="center"
+            android:singleLine="true"
             android:background="#ffffff"
+            android:textColor="#000000"
             android:digits="0123456789."
+            android:maxLength="15"
             android:ems="10"
-            android:gravity="center"
-            android:inputType="number"
-            android:text="@string/server_ipaddress" />
+            android:gravity="center_horizontal"
+            android:inputType="numberDecimal|number"
+            android:text="" />
         
         <Button
             android:id="@+id/button_find_server"
@@ -34,7 +47,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:background="#00aa00"
-            android:text="@string/find_server" />
+            android:text="@string/register" />
 
         <Button
             android:id="@+id/button_stop_testing"
@@ -52,17 +65,15 @@
             android:background="#ffffff"
             android:padding="5dp" >
 
-              <TextView
-                  android:id="@+id/textView_server_ipaddress"
-                  android:layout_width="253dp"
-                  android:layout_height="wrap_content"
-                  android:layout_gravity="center_horizontal"
-                  android:layout_marginBottom="25dp"
-                  android:layout_marginTop="30dp"
-                  android:padding="5dp"
-                  android:text="@string/server_ipaddress" />
+            <TextView
+                android:id="@+id/textView_Status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#333333"
+                android:text="@string/Status"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
 
-</FrameLayout>
+		</FrameLayout>
         
     </LinearLayout>
 

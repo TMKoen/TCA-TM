@@ -1,8 +1,18 @@
 package com.koen.tca.android.state;
 
+import com.koen.tca.android.state.thread.ThreadTest;
+
+import android.os.Handler;
+
 
 public class AndroidStateTest implements IAndroidState {
 
+	private ThreadTest threadTest;
+	
+	public AndroidStateTest () {
+		threadTest = new ThreadTest ();
+	}
+	
 	@Override
 	public void changeState(AndroidEvents androidEvent,
 			AndroidStateMachine androidStateMachine) {
@@ -21,8 +31,10 @@ public class AndroidStateTest implements IAndroidState {
 	}
 
 	@Override
-	public void activateState() {
-		// TODO Auto-generated method stub
+	public void activateState(Handler mainActivityHandler) {
+		// Start a new Thread that runs the state: Ready
+		threadTest.startThread(mainActivityHandler);
+		// Now returns to the main thread while the new thread is running.
 
 	}
 

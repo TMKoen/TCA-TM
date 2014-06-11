@@ -1,9 +1,21 @@
 package com.koen.tca.android.state;
 
+import android.os.Handler;
+import android.os.Looper;
+
+import com.koen.tca.android.state.thread.ThreadExpose;
+import com.koen.tca.android.state.thread.ThreadReady;
+
 
 
 public class AndroidStateReady implements IAndroidState {
 
+	private ThreadReady threadReady;
+	
+	public AndroidStateReady () {
+		threadReady = new ThreadReady ();
+	}
+	
 	@Override
 	public void changeState(AndroidEvents androidEvent,
 			AndroidStateMachine androidStateMachine) {
@@ -24,9 +36,10 @@ public class AndroidStateReady implements IAndroidState {
 	}
 
 	@Override
-	public void activateState() {
-		// TODO Auto-generated method stub
-
+	public void activateState(Handler mainActivityHandler) {
+		// Start a new Thread that runs the state: Ready
+		threadReady.startThread(mainActivityHandler);
+		// Now returns to the main thread while the new thread is running.
 	}
 
 	/**
