@@ -76,6 +76,8 @@ public class TcaMainActivity extends Activity {
 	// The handler to the UI status TextView.
 	private TextView textView_status;
 
+	// Creates an object of ActionRunnner. It is a singleton, so there can be only one object of this class.
+	private ActionRunner action = ActionRunner.SINGLETON();
 	
 	/**
 	 * The main method that starts and initialize the activity (user interface).

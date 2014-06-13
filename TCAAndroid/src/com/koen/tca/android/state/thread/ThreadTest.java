@@ -4,7 +4,7 @@ import java.net.Socket;
 
 import android.os.Handler;
 
-public class ThreadTest implements Runnable {
+public class ThreadTest implements IThreadState {
 
 	private Thread threadTest;
 	private final String threadName = "Test";
@@ -27,6 +27,12 @@ public class ThreadTest implements Runnable {
 
 	@Override
 	public void run() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void stopThread() {
 		// TODO Auto-generated method stub
 		
 	}

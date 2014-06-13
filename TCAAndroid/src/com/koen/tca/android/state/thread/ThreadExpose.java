@@ -10,9 +10,22 @@ import android.os.Message;
 
 import com.koen.tca.android.DeviceIdentifier;
 import com.koen.tca.android.state.AndroidEvents;
-import com.koen.tca.android.wrapper.ExposeDataWrapper;
+import com.koen.tca.android.wrapper.RemoteMessageTransmitter;
+import com.koen.tca.android.wrapper.IMessage;
+import com.koen.tca.android.wrapper.MessageChangeState;
+import com.koen.tca.android.wrapper.MessageExpose;
 
-public class ThreadExpose implements Runnable {
+/**
+ * Runs the Thread for the Expose state.
+ * <p>
+ * The thread is sending a Expose message to the Server so that the Server knows this device.
+ * After that, the Server sends a Change State message back and this thread is stopping.
+ * the android device goes to the Ready state or the Idle state is something is wrong.
+ * @version
+ * @author Koen Nijmeijer
+ *
+ */
+public class ThreadExpose implements IThreadState {
 
 	private Thread threadExpose;
 	private final String threadName = "Expose";
@@ -35,48 +48,54 @@ public class ThreadExpose implements Runnable {
 		}
 	}
 	
+	@Override
+	public void stopThread() {
+		// Because this thread stops direct after the exposer, this method is not used. 
+		
+	}	
 
 	@Override
 	public void run() {
 
-		// ExposeDevice has the IMEI and telephone number of the Android device and
-		// it has also the Server IP address and the port number.
-		ExposeDataWrapper dataWrapper = new ExposeDataWrapper ();
+		IMessage changeStateMsg = null;
+		AndroidEvents event = AndroidEvents.STOP_EXPOSE_NO_SERVER;
+		
+		// Create an object which can handle messages (sending/receiving) to and from the Server.
+		RemoteMessageTransmitter messageTransmitter = new RemoteMessageTransmitter ();
 
 		// Gets the object thats has the IMEI and Telephone number of the phone.
 		DeviceIdentifier device = DeviceIdentifier.SINGLETON();
 
 		if (device.getServerIpAddress()!= null && device.getSocketPortNumber() != 0) {
-	//		try {
-	//			clientSocket = new Socket (device.getServerIpAddress(), device.getSocketPortNumber());
-				
-				// Sends the IMEI and telephone number to the Server.
-//				dataWrapper.SendDeviceInfo(clientSocket.getOutputStream(), 
-//						device.getImeiNumber(), 
-//						device.getTelephoneNumber());
-//				AndroidEvents event = dataWrapper.receiveEvent(clientSocket.getInputStream());
-/*
 			try {
-				Thread.sleep(1000*30);
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-	*/
-         
+				clientSocket = new Socket (device.getServerIpAddress(), device.getSocketPortNumber());
+				
+				// Sends a MessageExpose message to the Server.
+				// MessageExpose has the IMEI and telephone number to the Android device.
+				messageTransmitter.sendMessage(new MessageExpose(device.getImeiNumber(), 
+						device.getTelephoneNumber()), 
+						clientSocket.getOutputStream());
 
-					
-				AndroidEvents event = AndroidEvents.STOP_EXPOSE_NO_SERVER;
+				changeStateMsg = messageTransmitter.receiveMessage(clientSocket.getInputStream());
+
+				// The server must send a ChangeState message after he receives Expose message. 
+				if (changeStateMsg instanceof MessageChangeState ) {
+					// gets the event from the received message
+					event = ((MessageChangeState)changeStateMsg).getEvent();
+				} else {
+					// something goes wrong. te server must send a ChangeState messages after exposer
+				}
+	 				
 				// sends the event to the main thread (UI thread).
 				Message msg = mainHandler.obtainMessage();
 				msg.obj = event;
 				mainHandler.sendMessage (msg);
 				
-//			} catch (UnknownHostException e) {
-//				e.printStackTrace();
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			} finally {
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
 				if (clientSocket != null) {
 					try {
 						clientSocket.close();
@@ -84,11 +103,12 @@ public class ThreadExpose implements Runnable {
 						e.printStackTrace();
 					}
 				}
-	//		}
+			}
 		}
 			
 	
 
 	}
+
 	
 }
