@@ -6,7 +6,7 @@ import org.eclipse.emf.common.util.URI;
 
 /**
  * Returns a collection of files.
- * 
+ * @author Christophe
  */
 public class FolderPollingService {
 

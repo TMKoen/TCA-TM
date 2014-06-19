@@ -14,8 +14,9 @@ import com.koen.tca.server.state.DetectResult;
 	
 
 /**
- * 
- * @author Christophe
+ * Detect Android devices.
+ * @version
+ * @author Koen Nijmeijer
  *
  */
 public class AndroidDetector extends RemoteUserEquipment {

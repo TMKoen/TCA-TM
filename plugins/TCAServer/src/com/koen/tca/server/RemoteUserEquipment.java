@@ -1,5 +1,11 @@
 package com.koen.tca.server;
 
+/**
+ * 
+ * @version
+ * @author Koen
+ *
+ */
 public class RemoteUserEquipment implements Runnable {
 
 	protected int portNumber;			// Server port number
@@ -9,7 +15,8 @@ public class RemoteUserEquipment implements Runnable {
 	}
 
 	public RemoteUserEquipment () {
-		portNumber = 0;	//default port number. Java listening on a random port number (greater or equal than 1024)
+		//default port number. Java listening on a random port number (greater or equal than 1024)
+		portNumber = 0;	
 	}
 	
 	/**
