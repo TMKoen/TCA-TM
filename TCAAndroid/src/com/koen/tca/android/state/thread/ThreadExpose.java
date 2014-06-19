@@ -1,6 +1,9 @@
 package com.koen.tca.android.state.thread;
 
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -31,7 +34,7 @@ public class ThreadExpose implements IThreadState {
 	private final String threadName = "Expose";
 	private Socket clientSocket;
 	private Handler mainHandler;
-	
+	private final int socketTimeout = 30000;
 	
 	public ThreadExpose () {
 		threadExpose = null;
@@ -68,8 +71,14 @@ public class ThreadExpose implements IThreadState {
 
 		if (device.getServerIpAddress()!= null && device.getSocketPortNumber() != 0) {
 			try {
-				clientSocket = new Socket (device.getServerIpAddress(), device.getSocketPortNumber());
+				InetSocketAddress serverAddress = new InetSocketAddress (device.getServerIpAddress(), device.getSocketPortNumber());
 				
+				clientSocket = new Socket();
+				clientSocket.connect(serverAddress,socketTimeout);
+		
+// 				old method without timeout!!!				
+//				clientSocket = new Socket (device.getServerIpAddress(), device.getSocketPortNumber());
+	
 				// Sends a MessageExpose message to the Server.
 				// MessageExpose has the IMEI and telephone number to the Android device.
 				messageTransmitter.sendMessage(new MessageExpose(device.getImeiNumber(), 
@@ -92,9 +101,21 @@ public class ThreadExpose implements IThreadState {
 				mainHandler.sendMessage (msg);
 				
 			} catch (UnknownHostException e) {
+				// Timeout was occurred 
+
+				
 				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// No valid host address. Thrown by clientsocket.connect(..)
+			} catch (ConnectException e) {
+				e.printStackTrace();
+				
 			} catch (IOException e) {
-				e.printStackTrace();
+				// Timeout. No server found!
+				Message msg = mainHandler.obtainMessage();
+				msg.obj = AndroidEvents.STOP_EXPOSE_NO_SERVER;
+				mainHandler.sendMessage(msg);
+				
 			} finally {
 				if (clientSocket != null) {
 					try {

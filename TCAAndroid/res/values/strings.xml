@@ -6,11 +6,14 @@
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="start_button">Start</string>
     <string name="stop_button">Stop</string>
-    <string name="Welcome">Before you push on the start button, be sure that the testserver is running. After the server is founded, the Android is ready for action.</string>
+    <string name="Welcome">Before you push on the register Android button, be sure that the testserver is running and you filled in the server IP address below. After the server is found, the Android is ready for action.</string>
     <string name="register">Register Android</string>
     <string name="stop_testing">Stop testing</string>
     <string name="server_ipaddress">0</string>
-    <string name="Status">State:</string>
+    <string name="Status">Status: </string>
     <string name="logo">T-Mobile logo</string>
+    <string name="State">State: </string>
+    <string name="Imei">Imei: </string>
+    <string name="Number">Number: </string>
 
 </resources>

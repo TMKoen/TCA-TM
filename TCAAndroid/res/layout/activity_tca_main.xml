@@ -12,6 +12,7 @@
            android:id="@+id/image"
            android:layout_width="match_parent"
            android:layout_height="60dp"
+           android:layout_marginTop="20dp"
            android:scaleType="fitCenter"
            android:contentDescription="@string/logo"
            android:src="@drawable/t_mobile_logo" />
@@ -20,8 +21,8 @@
            android:id="@+id/textView_welcome"
            android:layout_width="253dp"
            android:layout_height="wrap_content"
-           android:layout_marginBottom="25dp"
-           android:layout_marginTop="50dp"
+           android:layout_marginBottom="10dp"
+           android:layout_marginTop="15dp"
            android:padding="5dp"
            android:text="@string/Welcome" />
 
@@ -29,7 +30,7 @@
             android:id="@+id/EditText_ipaddr"
             android:layout_width="300dp"
             android:layout_height="30dp"
-            android:layout_marginBottom="50dp"
+            android:layout_marginBottom="5dp"
             android:textAlignment="center"
             android:singleLine="true"
             android:background="#ffffff"
@@ -40,10 +41,29 @@
             android:gravity="center_horizontal"
             android:inputType="numberDecimal|number"
             android:text="" />
+
+        <EditText
+            android:id="@+id/editText_telephone_nr"
+            android:layout_width="300dp"
+            android:layout_height="30dp"
+            android:singleLine="true"
+            android:layout_marginBottom="5dp"
+            android:background="#ffffff"
+            android:textColor="#000000"
+            android:inputType="phone"
+            android:digits="0123456789+#"
+            android:maxLength="15"
+            android:ems="10"
+            android:gravity="center_horizontal"
+            android:text=""
+            android:visibility="invisible" >
+
+            <requestFocus />
+        </EditText>
         
         <Button
             android:id="@+id/button_find_server"
-            android:layout_width="150dp"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:background="#00aa00"
@@ -51,20 +71,28 @@
 
         <Button
             android:id="@+id/button_stop_testing"
-            android:layout_width="150dp"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:background="#aa0000"
             android:text="@string/stop_testing" />
         
-        <FrameLayout
-            style="@style/AppTheme"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:background="#ffffff"
-            android:padding="5dp" >
-
+        <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="left"
+        android:orientation="vertical"
+        android:background="#ffffff"
+        >
+        
+            <TextView
+                android:id="@+id/textView_State"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#333333"
+                android:text="@string/State" 
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+            
             <TextView
                 android:id="@+id/textView_Status"
                 android:layout_width="wrap_content"
@@ -73,7 +101,25 @@
                 android:text="@string/Status"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
 
-		</FrameLayout>
+            <TextView
+                android:id="@+id/textView_Imei"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#333333"
+                android:text="@string/Imei"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <TextView
+                android:id="@+id/textView_Number"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#333333"
+                android:text="@string/Number" 
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+		</LinearLayout>
+
+
         
     </LinearLayout>
 
