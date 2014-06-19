@@ -2,7 +2,7 @@ package com.koen.tca.server.state;
 
 import java.io.IOException;
 
-import com.koen.tca.server.AndroidDetector;
+import com.koen.tca.server.thread.AndroidDetector;
 
 
 

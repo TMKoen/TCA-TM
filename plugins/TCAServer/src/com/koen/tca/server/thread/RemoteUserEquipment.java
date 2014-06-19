@@ -1,4 +1,4 @@
-package com.koen.tca.server;
+package com.koen.tca.server.thread;
 
 /**
  * 
