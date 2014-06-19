@@ -1,9 +1,11 @@
-package com.koen.tca.server.message;
+package com.koen.tca.common.message;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+
+import com.koen.tca.common.message.AndroidEvents;
 
 public class ReadyDataWrapper {
 

@@ -1,4 +1,4 @@
-package com.koen.tca.server.message;
+package com.koen.tca.common.message;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -12,6 +12,8 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StreamCorruptedException;
+
+import com.koen.tca.common.message.AndroidEvents;
 
 public class RemoteMessageTransmitter {
 

@@ -2,21 +2,23 @@ package com.koen.tca.android.state.thread;
 
 import java.io.IOException;
 import java.net.ConnectException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 
 import com.koen.tca.android.DeviceIdentifier;
 import com.koen.tca.android.state.AndroidEvents;
-import com.koen.tca.android.wrapper.RemoteMessageTransmitter;
-import com.koen.tca.android.wrapper.IMessage;
+//import com.koen.tca.android.wrapper.RemoteMessageTransmitter;
+//import com.koen.tca.android.wrapper.IMessage;
+//import com.koen.tca.android.wrapper.MessageChangeState;
+//import com.koen.tca.android.wrapper.MessageExpose;
 import com.koen.tca.android.wrapper.MessageChangeState;
-import com.koen.tca.android.wrapper.MessageExpose;
+import com.koen.tca.common.message.IMessage;
+import com.koen.tca.common.message.MessageExpose;
+import com.koen.tca.common.message.RemoteMessageTransmitter;
 
 /**
  * Runs the Thread for the Expose state.
@@ -65,6 +67,10 @@ public class ThreadExpose implements IThreadState {
 		
 		// Create an object which can handle messages (sending/receiving) to and from the Server.
 		RemoteMessageTransmitter messageTransmitter = new RemoteMessageTransmitter ();
+		
+		
+		
+		
 
 		// Gets the object thats has the IMEI and Telephone number of the phone.
 		DeviceIdentifier device = DeviceIdentifier.SINGLETON();

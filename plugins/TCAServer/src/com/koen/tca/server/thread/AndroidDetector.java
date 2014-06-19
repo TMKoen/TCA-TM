@@ -1,22 +1,24 @@
 package com.koen.tca.server.thread;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.List;
 
-import com.koen.tca.server.message.AndroidEvents;
-import com.koen.tca.server.message.MessageAction;
-import com.koen.tca.server.message.IMessage;
-import com.koen.tca.server.message.MessageChangeState;
-import com.koen.tca.server.message.MessageExpose;
+import com.koen.tca.common.message.AndroidEvents;
+import com.koen.tca.common.message.ChangeStateMessage;
+import com.koen.tca.common.message.IMessage;
+import com.koen.tca.common.message.MessageExpose;
+import com.koen.tca.common.message.RemoteMessageTransmitter;
+//import com.koen.tca.server.message.AndroidEvents;
+//import com.koen.tca.server.message.ActionMessage;
+//import com.koen.tca.server.message.IMessage;
+//import com.koen.tca.server.message.ChangeStateMessage;
+//import com.koen.tca.server.message.MessageExpose;
 import com.koen.tca.server.ICallBackClient;
 import com.koen.tca.server.UEInfo;
-import com.koen.tca.server.message.RemoteMessageTransmitter;
+//import com.koen.tca.server.message.RemoteMessageTransmitter;
 import com.koen.tca.server.state.DetectResult;
 	
 
@@ -152,7 +154,7 @@ public class AndroidDetector extends RemoteUserEquipment {
 
 						// The Android device information is stored, 
 						// so send a ChangeState message to the Android device.
-						remoteMessageTransmitter.sendMessage(new MessageChangeState(AndroidEvents.STOP_EXPOSE),clientSocket.getOutputStream());
+						remoteMessageTransmitter.sendMessage(new ChangeStateMessage(AndroidEvents.STOP_EXPOSE),clientSocket.getOutputStream());
 					}
 				}
 

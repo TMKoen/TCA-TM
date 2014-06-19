@@ -10,3 +10,5 @@ Bundle-ActivationPolicy: lazy
 Bundle-Activator: com.koen.tca.server.internal.TCAServerActivator
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: org.apache.log4j
+Bundle-ClassPath: tca-common.jar,
+ .

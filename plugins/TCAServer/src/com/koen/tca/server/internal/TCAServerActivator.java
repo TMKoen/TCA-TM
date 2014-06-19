@@ -13,6 +13,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.koen.tca.server.TCAServer;
+import com.netxforge.netxtest.DragonXRuntimeModule;
 
 /**
  * OSGI Activator class that starts and stops the <code>TCAServer</code> class. 
