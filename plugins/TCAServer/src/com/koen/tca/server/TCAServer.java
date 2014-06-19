@@ -11,12 +11,26 @@ import com.google.inject.Inject;
  */
 public class TCAServer {
 
+	// Injection of the TestServer object
 	@Inject
 	TestServer testServer;
 
+	/**
+	 * The starting point where the Server starts.
+	 * <p>
+	 * This the main method where 
+	 * @param
+	 * @return
+	 * @throws Exception
+	 * @version
+	 * @author Koen Nijmeijer
+	 * @see TestServer
+	 * 
+	 */
 	public void start() {
 		try {
-			// Start the server, listen for RMI requests. 
+			// Start the server, listen for RMI requests.
+			// The
 			testServer.startServer();
 			
 		} catch (Exception e) {

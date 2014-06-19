@@ -5,8 +5,6 @@ import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.google.inject.Inject;
 import com.koen.tca.server.state.DetectResult;
