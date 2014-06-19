@@ -5,11 +5,11 @@ import com.google.inject.Module;
 import com.koen.tca.server.AndroidDispatcher;
 import com.koen.tca.server.DragonXInvoker;
 import com.koen.tca.server.FolderPollingService;
-import com.koen.tca.server.IExternalDispatcher;
 import com.koen.tca.server.IRemoteServer;
 import com.koen.tca.server.TCAServer;
 import com.koen.tca.server.TestServer;
 import com.koen.tca.server.state.ServerStateMachine;
+import com.netxforge.netxtest.interpreter.IExternalDispatcher;
 
 /**
  * Binds the classes and interfaces necessary for Google Guice dependency injection.

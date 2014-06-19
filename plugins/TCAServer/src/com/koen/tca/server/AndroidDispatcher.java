@@ -1,8 +1,5 @@
 package com.koen.tca.server;
 
-import java.net.InetSocketAddress;
-import java.net.Socket;
-
 import com.koen.tca.server.state.DetectResult;
 import com.netxforge.netxtest.dragonX.Action;
 import com.netxforge.netxtest.dragonX.DragonXPackage;
@@ -11,6 +8,7 @@ import com.netxforge.netxtest.dragonX.ParameterSet;
 import com.netxforge.netxtest.dragonX.UE;
 import com.netxforge.netxtest.dragonX.UEMetaObject;
 import com.netxforge.netxtest.dragonX.UEPARAMS;
+import com.netxforge.netxtest.interpreter.IExternalDispatcher;
 
 /**
  * A dispatcher which deals with DragonX Test actions.
@@ -57,15 +55,18 @@ public class AndroidDispatcher implements IExternalDispatcher {
 							if (imei.equalsIgnoreCase(info.getImei())) {
 								info.getIPAddress();
 
-								try {
-									InetSocketAddress serverAddress = new InetSocketAddress (device.getServerIpAddress(), device.getSocketPortNumber());
-									private Socket clientSocket;
-									
-									clientSocket = new Socket();
-									clientSocket.connect(serverAddress,socketTimeout);
-								} catch () {
-									
-								}
+								// Koen still working on this. 
+								
+								
+//								try {
+//									InetSocketAddress serverAddress = new InetSocketAddress (device.getServerIpAddress(), device.getSocketPortNumber());
+//									private Socket clientSocket;
+//									
+//									clientSocket = new Socket();
+//									clientSocket.connect(serverAddress,socketTimeout);
+//								} catch () {
+//									
+//								}
 								
 								
 								// Call your RMI to dispatch to this IP.
