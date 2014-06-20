@@ -21,7 +21,7 @@ public class ServerStateDetect extends AbstractServerState {
 	public ServerStateDetect() {
 
 		try {
-			androidDetector = new AndroidDetector(10);
+			androidDetector = new AndroidDetector(8888);
 			androidDetector.setDetectResult(DetectResult.SINGLETON());
 
 		} catch (IOException e) {
