@@ -47,6 +47,7 @@ public class AndroidDetector extends RemoteUserEquipment {
 	private DetectResult detectResult;
 	
 	
+	@SuppressWarnings("unused")
 	private ICallBackClient callBack;
 
 	public AndroidDetector(int port) throws IOException {
