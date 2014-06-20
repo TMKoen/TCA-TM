@@ -34,8 +34,8 @@ public class AndroidDetector extends RemoteUserEquipment {
 	// Handler to the server socket
 	private ServerSocket serverSocket;
 
-	// timeout is set to 5 seconds
-	private final int timeout = 10000;
+	// timeout is set to 60 seconds
+	private final int timeout = 1000 * 60;
 
 	// Handler to the Thread and the name of the thread.
 	private Thread androidThread;
@@ -177,14 +177,7 @@ public class AndroidDetector extends RemoteUserEquipment {
 				}
 
 			} catch (SocketTimeoutException s) {
-				// Exception is thrown if serverScoket.accept waits longer then
-				// the timeout set by (setSoTimeout())
-				// Necessary to check if stopThread is set to true
-				stopThread = true; // No use really.
-				// TODO, CB Report the timeout in the state.
-				break;
 			} catch (IOException e) {
-				e.printStackTrace();
 			} finally {
 				closeConnection();
 				stateCallBack.ending();
@@ -217,7 +210,24 @@ public class AndroidDetector extends RemoteUserEquipment {
 	 */
 	public synchronized void stopThread() {
 		stopThread = true;
+		
+		
+		// Close our socket, it will otherwise block the Thread method from closing. 
+		
+		try {
+			serverSocket.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		
 		do {
+			
+			try {
+				
+				this.wait(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			// wait until the thread is totally stopped.
 		} while (androidThread.isAlive());
 

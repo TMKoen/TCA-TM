@@ -74,7 +74,9 @@ public class ServerStateDetect extends AbstractServerState {
 	public void ending() {
 		// fired by Android Thread being completed, like a Socket timeout etc...
 		// Go back to ready mode.
-		this.getContext().setState(new ServerStateReady());
+		ServerStateReady serverStateReady = new ServerStateReady();
+		getContext().setState(serverStateReady);
+		serverStateReady.activateState(getContext());
 
 		// Notify upstream we are ending.
 		super.ending();

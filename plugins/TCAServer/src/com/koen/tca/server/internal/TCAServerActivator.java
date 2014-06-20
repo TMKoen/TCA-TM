@@ -209,14 +209,14 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 						this.server.getTestServer().getStateMachine()
 								.changeState(ServerEvents.START_DETECT);
 
-						return "fire event" + ServerEvents.START_DETECT;
+						return "fire event: " + ServerEvents.START_DETECT;
 
 					} else if (nextArgument3.equals("stop_detect")) {
 
 						this.server.getTestServer().getStateMachine()
 								.changeState(ServerEvents.STOP_DETECT);
 
-						return "fire event" + ServerEvents.STOP_DETECT;
+						return "fire event:" + ServerEvents.STOP_DETECT;
 
 					} else {
 						return "The event " + nextArgument3
@@ -237,7 +237,9 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 
 		return "---TCA Commands"
 				+ "\n       With TCA commands the following activities are supported "
-				+ "\n     - Query the TCA Server state" + "\n     "
-				+ "\n     - View various TCA Server objects";
+				+ "\n     - Manage the TCA Server" 
+				+ "\n       state [details] Optionally ask for details of the current state"
+				+ "\n       event start_detect|stop_detect"
+				+ "\n     - [TODO]View various TCA Server objects";
 	}
 }
