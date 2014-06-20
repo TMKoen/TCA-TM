@@ -20,53 +20,62 @@ import com.koen.tca.server.ICallBackClient;
 import com.koen.tca.server.UEInfo;
 //import com.koen.tca.server.message.RemoteMessageTransmitter;
 import com.koen.tca.server.state.DetectResult;
-	
+import com.koen.tca.server.state.IStateCallBack;
 
 /**
  * Detect Android devices.
+ * 
  * @version
  * @author Koen Nijmeijer
- *
+ * 
  */
 public class AndroidDetector extends RemoteUserEquipment {
 
 	// Handler to the server socket
 	private ServerSocket serverSocket;
-	
+
 	// timeout is set to 5 seconds
-	private final int timeout = 10000 * 5; 
+	private final int timeout = 10000;
 
 	// Handler to the Thread and the name of the thread.
 	private Thread androidThread;
+
+	// The nam eof our Thread.
 	private final String threadName = "Android Thread";
-	
-	 // if this bit is true, than the thread must be stopped.
+
+	// if this bit is true, than the thread must be stopped.
 	private boolean stopThread;
-	
-	// Singleton object that stores the Android device information (IMEI and telephone number).
+
+	// Singleton object that stores the Android device information (IMEI and
+	// telephone number).
 	private DetectResult detectResult;
-	
-	
+
+	// A callback.
+	// When we timeout, we fire call back failed.
 	@SuppressWarnings("unused")
 	private ICallBackClient callBack;
 
+	private IStateCallBack stateCallBack;
+
 	public AndroidDetector(int port) throws IOException {
-		
-		 // Handler to the new Thread
+
+		// Handler to the new Thread
 		androidThread = null;
-		
+
 		// the handler to the server socket
-		serverSocket = null; 
-		
-		// Sets the port Number. Is the number not valid, port Number is 0 (random).
-		setPortNumber(port); 
-								
+		serverSocket = null;
+
+		// Sets the port Number. Is the number not valid, port Number is 0
+		// (random).
+		setPortNumber(port);
+
 		// if this bit is true, than the running androidThread is stopping.
-		stopThread = false; 
-		
-		// gets the singleton object that stored all the Android devices (IMEI and telephone number)
+		stopThread = false;
+
+		// gets the singleton object that stored all the Android devices (IMEI
+		// and telephone number)
 		detectResult = DetectResult.SINGLETON();
-		
+
 	}
 
 	/**
@@ -81,24 +90,24 @@ public class AndroidDetector extends RemoteUserEquipment {
 	@Override
 	public void run() {
 
-		// Holds the String name of the message that is send by the Android device.
+		// Holds the String name of the message that is send by the Android
+		// device.
 		String messageType = null;
-		
+
 		// The message that was received from the Android device.
 		IMessage remoteMsg = null;
-		
+
 		RemoteMessageTransmitter remoteMessageTransmitter = new RemoteMessageTransmitter();
-		
 
 		UEInfo clientUeInfo = null;
 		String clientImei, clientName, clientNumber;
-		
-		
+
 		try {
 			serverSocket = new ServerSocket(getPortNumber());
 
-			// sets the timeout how long the serverSocket.accepts () waits for a client
-			serverSocket.setSoTimeout(timeout); 
+			// sets the timeout how long the serverSocket.accepts () waits for a
+			// client
+			serverSocket.setSoTimeout(timeout);
 		} catch (IOException e) {
 			e.printStackTrace();
 
@@ -107,14 +116,15 @@ public class AndroidDetector extends RemoteUserEquipment {
 		}
 
 		// checks if stopThread () is not been called.
-		while (stopThread != true) { 
+		while (stopThread != true) {
 
 			try {
-				
+
 				Socket clientSocket = serverSocket.accept();
 
 				// gets the message from the Android clients
-				remoteMsg = remoteMessageTransmitter.receiveMessage(clientSocket.getInputStream());
+				remoteMsg = remoteMessageTransmitter
+						.receiveMessage(clientSocket.getInputStream());
 
 				if (remoteMsg != null) {
 					messageType = remoteMsg.toString();
@@ -127,20 +137,23 @@ public class AndroidDetector extends RemoteUserEquipment {
 						clientImei = ((MessageExpose) remoteMsg).getImei();
 						clientNumber = ((MessageExpose) remoteMsg).getNumber();
 
-						// creates a new UEInfo object from the Android client data
+						// creates a new UEInfo object from the Android client
+						// data
 						// inputstream
 						clientUeInfo = new UEInfo(clientImei, clientName,
 								clientNumber);
 						clientUeInfo.setIPAddress(clientSocket.getInetAddress()
 								.toString());
 
-						// Gets the singleton object with holds al the known Android device 
+						// Gets the singleton object with holds al the known
+						// Android device
 						List<UEInfo> ueList = detectResult.getValidUEList();
 
 						int i = 0;
 						for (; i != ueList.size()
 								&& !ueList.get(i).getImei().equals(clientImei); i++) {
-							// search for a UEInfo object with the same IMEI number
+							// search for a UEInfo object with the same IMEI
+							// number
 							// as the Android client.
 						}
 
@@ -148,14 +161,18 @@ public class AndroidDetector extends RemoteUserEquipment {
 							// no UEInfo object in the list. Add a new one
 							ueList.add(clientUeInfo);
 						} else {
-							// An object in the list has the same IMEI. Replace the
+							// An object in the list has the same IMEI. Replace
+							// the
 							// old object with clientUeInfo
 							ueList.set(i, clientUeInfo);
 						}
 
-						// The Android device information is stored, 
+						// The Android device information is stored,
 						// so send a ChangeState message to the Android device.
-						remoteMessageTransmitter.sendMessage(new ChangeStateMessage(AndroidEvents.STOP_EXPOSE),clientSocket.getOutputStream());
+						remoteMessageTransmitter.sendMessage(
+								new ChangeStateMessage(
+										AndroidEvents.STOP_EXPOSE),
+								clientSocket.getOutputStream());
 					}
 				}
 
@@ -163,25 +180,29 @@ public class AndroidDetector extends RemoteUserEquipment {
 				// Exception is thrown if serverScoket.accept waits longer then
 				// the timeout set by (setSoTimeout())
 				// Necessary to check if stopThread is set to true
+				stopThread = true; // No use really.
+				// TODO, CB Report the timeout in the state.
 				break;
 			} catch (IOException e) {
 				e.printStackTrace();
 			} finally {
 				closeConnection();
+				stateCallBack.ending();
 			}
 		} // while
-		
-//		callBack.doyourthing here
-		
-		
-		
+
+		// callBack.doyourthing here
+
 	}
 
 	/**
 	 * This method starts a new thread where the server is listening to new
 	 * Android devices (UE's)
 	 */
-	public synchronized void startThread() {
+	public synchronized void startThread(IStateCallBack stateCallBack) {
+		
+		this.stateCallBack = stateCallBack;
+		
 		// if there is another thread running, don't create a new thread
 		if (androidThread == null) {
 			androidThread = new Thread(this, threadName);
@@ -220,6 +241,13 @@ public class AndroidDetector extends RemoteUserEquipment {
 
 	public void setCallBack(ICallBackClient callBack) {
 		this.callBack = callBack;
-		
 	}
+
+	@Override
+	public String toString() {
+		return "I am detecting android UE's on port:" + this.getPortNumber()
+				+ "\ndetection result (sofar) is: " + detectResult.toString();
+
+	}
+
 }

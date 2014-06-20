@@ -103,6 +103,11 @@ public class DragonXInvoker {
 
 			// catch any other exception
 		}
+	}
 
+	@Override
+	public String toString() {
+		
+		return scriptObtainer.toString(); 
 	}
 }

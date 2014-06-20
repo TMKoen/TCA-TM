@@ -16,14 +16,14 @@ public class ServerStateTest extends AbstractServerState {
 	}
 
 	@Override
-	public void changeState(ServerEvents serverEvent, ServerStateMachine context) {
+	public void changeState(ServerEvents serverEvent) {
 
 		switch (serverEvent) {
 
 		case STOP_TEST:
 		case FINISHED:
 			// The Server goes to the 'Wait' state
-			context.setState(new ServerStateReady());
+			getContext().setState(new ServerStateReady());
 			break;
 		default:
 			// the other serverEvents are not valid in the 'Test' state
@@ -33,7 +33,21 @@ public class ServerStateTest extends AbstractServerState {
 	}
 
 	@Override
-	public void activateState() {
+	public void activateState(ServerStateMachine context) {
+		super.activateState(context);
 		dragonXInvoker.invoke();
 	}
+
+	@Override
+	public String toString() {
+		return "I am currently testing, type tca state details for more information";
+	}
+
+	@Override
+	public String details() {
+
+		// TODO Read out the invoker
+		return super.details();
+	}
+
 }

@@ -50,4 +50,8 @@ public class TCAServer {
 		
 	}
 
+	public TestServer getTestServer() {
+		return testServer;
+	}
+
 }

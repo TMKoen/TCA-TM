@@ -1,19 +1,17 @@
 package com.koen.tca.server.state;
 
+public class ServerStateIdle extends AbstractServerState {
 
-public class ServerStateIdle extends AbstractServerState  {
+	public ServerStateIdle() {
 
-	public ServerStateIdle () {
-		
 	}
-	
+
 	@Override
-	public void changeState(ServerEvents serverEvent, ServerStateMachine context) {
-		
-		
-		switch (serverEvent){
+	public void changeState(ServerEvents serverEvent) {
+
+		switch (serverEvent) {
 		case START_DETECT:
-			context.setState(new ServerStateDetect());
+			getContext().setState(new ServerStateDetect());
 			break;
 		default:
 			break;
@@ -21,10 +19,7 @@ public class ServerStateIdle extends AbstractServerState  {
 	}
 
 	@Override
-	public void activateState() {
-		
-		
+	public String toString() {
+		return "I am currently idle... tap tap..., any detection work for me?";
 	}
-
-	
 }

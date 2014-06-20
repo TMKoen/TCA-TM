@@ -1,38 +1,36 @@
 package com.koen.tca.server.state;
 
-
 public class ServerStateReady extends AbstractServerState {
 
-	public ServerStateReady () {
-		
+	public ServerStateReady() {
+
 	}
 
 	@Override
-	public void changeState(ServerEvents serverEvent, ServerStateMachine context) {
+	public void changeState(ServerEvents serverEvent) {
 
 		switch (serverEvent) {
 		case START_DETECT:
 			// server goes to the 'Detect' state.
-			context.setState(new ServerStateDetect());
+			getContext().setState(new ServerStateDetect());
 			break;
 		case IDLE:
 			// server goes to the 'Idle' state.
-			context.setState(new ServerStateIdle());
+			getContext().setState(new ServerStateIdle());
 			break;
 		case START_TEST:
-			context.setState(new ServerStateTest());
+			getContext().setState(new ServerStateTest());
 			break;
 		default:
 			// the other serverEvents are not valid in the 'Ready' state
 			break;
 		}
-		
+
 	}
 
 	@Override
-	public void activateState() {
-		
+	public String toString() {
+		return "I am currently ready...ready for what??";
 	}
-	
-	
+
 }

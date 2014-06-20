@@ -1,6 +1,5 @@
 package com.koen.tca.server.state;
 
-import com.koen.tca.server.ICallBackClient;
 
 /**
  * Interface for the server States: Idle, Detect, Ready and Test.
@@ -26,28 +25,32 @@ import com.koen.tca.server.ICallBackClient;
 public interface IServerState {
 
 	/**
-	 * Change the state of the object <code>ServerStateMachine</code>.
-	 * the state changes, depends of the event that occurs and the present state of the <code>ServerStateMachine</code>.
-	 *  
+	 * Change the state of the object <code>ServerStateMachine</code>. the state
+	 * changes, depends of the event that occurs and the present state of the
+	 * <code>ServerStateMachine</code>.
+	 * 
 	 * <p>
 	 * The possible states are: Idle, Detect, Ready and Test.
 	 * 
-	 * @param serverEvent represents the event that occurs
-	 * @param context holds a handle to the ServerStateMachine
+	 * @param serverEvent
+	 *            represents the event that occurs
 	 * @see ServerEvents
+	 */
+	public void changeState(ServerEvents serverEvent);
+
+	/**
+	 * Get detailed information about the s
+	 * 
+	 * @return Details information about this {@link IServerState}
+	 */
+	public String details();
+
+	/**
+	 * Activate this state.
+	 * 
+	 * @param context
 	 * @see ServerStateMachine
 	 */
-	public void changeState(ServerEvents serverEvent, ServerStateMachine context);
+	public void activateState(ServerStateMachine context);
 
-	/**
-	 * 
-	 */
-	public void activateState();
-
-	/**
-	 * The call back method for when the action is completed.
-	 * 
-	 * @return
-	 */
-	public ICallBackClient getCallBack();
 }

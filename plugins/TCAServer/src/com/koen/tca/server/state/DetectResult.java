@@ -13,10 +13,11 @@ public class DetectResult {
 
 	private static DetectResult self;
 
-	private DetectResult () {
+	private DetectResult() {
 		// Only accessible by the class itself
-		
+
 	}
+
 	public static DetectResult SINGLETON() {
 
 		if (self == null) {
@@ -47,6 +48,20 @@ public class DetectResult {
 
 	public synchronized void resetUEList() {
 		validUEList.clear();
+	}
+
+	@Override
+	public String toString() {
+		
+		if(getValidUEList().isEmpty()){
+			return "No UE's detected :-(";
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		for (UEInfo ueinfo : getValidUEList()) {
+			sb.append("\n" + ueinfo);
+		}
+		return sb.toString();
 	}
 
 }

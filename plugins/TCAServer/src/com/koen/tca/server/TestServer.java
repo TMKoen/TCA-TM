@@ -15,6 +15,8 @@ import com.koen.tca.server.state.ServerStateMachine;
  * 'TestServer' is the main class that handles all the necessary actions The RMI
  * methods are used by the client to communicate with the server.
  * 
+ * TODO, separate the state machine, so states can be controlled in non RMI mode. (I.e. by command line). 
+ * 
  * @author Koen Nijmeijer
  * 
  */
@@ -154,8 +156,11 @@ public class TestServer extends java.rmi.server.UnicastRemoteObject implements
 
 	@Override
 	public synchronized void getServerStatus() throws RemoteException {
-		// TODO Auto-generated method stub
+			// TODO Auto-generated method stub
+	}
 
+	public ServerStateMachine getStateMachine() {
+		return stateMachine;
 	}
 
 } // class TestServer

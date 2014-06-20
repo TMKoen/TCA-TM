@@ -8,19 +8,25 @@ package com.koen.tca.server.state;
  * @see IServerState
  * 
  */
-public class ServerStateMachine {
+public class ServerStateMachine implements IStateCallBack {
 
 	private IServerState presentState;
 
 	public ServerStateMachine() {
 		// the Server starts in the 'Idle' state
 		setState(new ServerStateIdle());
+		presentState.activateState(this);
 	}
 
 	public void changeState(ServerEvents serverEvent) {
 		if (presentState != null) {
-			presentState.changeState(serverEvent, this);
-			presentState.activateState();
+
+			// FIXME, This has side effect of change presentState! Very bad
+			// coding practise.
+			presentState.changeState(serverEvent);
+
+			// The presentState changed, we can not activate it.
+			presentState.activateState(this);
 		} else {
 			// Prints the string generated in the toString () method.
 			System.out.println(this);
@@ -50,4 +56,14 @@ public class ServerStateMachine {
 				: "We should really have a state already!";
 	}
 
+	@Override
+	public void starting() {
+		System.out.println("starting: " + presentState);
+		
+	}
+
+	@Override
+	public void ending() {
+		System.out.println("stopping: " + presentState);
+	}
 }
