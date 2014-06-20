@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Server
-Bundle-SymbolicName: com.koen.tca.server
+Bundle-SymbolicName: com.koen.tca.server;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Export-Package: com.koen.tca.server
 Require-Bundle: com.netxforge.netxtest;bundle-version="1.0.0",

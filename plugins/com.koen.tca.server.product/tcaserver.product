@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="tcaserver" uid="tcaserver" id="com.koen.tca.server.product.tcaserver" application="com.koen.tca.server" useFeatures="true" includeLaunchers="true">
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <programArgs>-debug -console 8811 -noExit -consoleLog</programArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+   </launcherArgs>
+
+   <launcher>
+      <solaris/>
+      <win useIco="false">
+         <bmp/>
+      </win>
+   </launcher>
+
+   <vm>
+   </vm>
+
+   <plugins>
+   </plugins>
+
+   <features>
+      <feature id="com.koen.tca.server.feature" version="1.0.0.qualifier"/>
+      <feature id="org.eclipse.emf.common" version="2.9.2.v20131212-0545"/>
+      <feature id="org.eclipse.emf.ecore" version="2.9.2.v20131212-0545"/>
+   </features>
+
+
+</product>
