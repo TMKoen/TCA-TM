@@ -2,9 +2,12 @@ package com.koen.tca.server;
 
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Collections;
+import java.util.Enumeration;
 
 import com.google.inject.Inject;
 import com.koen.tca.server.state.DetectResult;
@@ -31,15 +34,15 @@ public class TestServer extends java.rmi.server.UnicastRemoteObject implements
 	 */
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * Handles all the States for the Server
-	 */
+	 // Handles all the States for the server.
 	@Inject
 	private ServerStateMachine stateMachine;
 
+	// The IP address of the server.
 	private String serverAdres;
-	private final int serverPort = 1099; // The default RMI server port to
-											// communicate with the client
+	
+	// The default RMI server port to communicate with the client.
+	private final int serverPort = 1099; 
 
 	/**
 	 * RMI registry variables
@@ -51,8 +54,29 @@ public class TestServer extends java.rmi.server.UnicastRemoteObject implements
 		super();
 
 		try {
-			serverAdres = InetAddress.getLocalHost().toString();
-			System.out.println(serverAdres);
+
+			// This gets the default IP address
+			//			serverAdres = InetAddress.getLocalHost().toString();
+			// System.out.println(serverAdres);		
+			
+			Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+			
+			for (NetworkInterface networkInterface: Collections.list(networkInterfaces)) {
+		
+				if (networkInterface.getInetAddresses().hasMoreElements() == true) {
+					System.out.println ("Display name: " + networkInterface.getDisplayName());
+					System.out.println ("Name: " + networkInterface.getName());
+					
+					Enumeration<InetAddress> inetAddress = networkInterface.getInetAddresses(); 
+					for (InetAddress address : Collections.list(inetAddress)) {
+						if (address != null) {
+							System.out.println("IP: " + address);
+						}
+					}
+				}
+			}
+			
+
 		} catch (Exception e) {
 			throw new RemoteException("No valid Server-IP adres!");
 		}

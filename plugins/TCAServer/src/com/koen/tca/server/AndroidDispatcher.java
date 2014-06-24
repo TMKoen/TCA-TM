@@ -16,6 +16,9 @@ import com.netxforge.netxtest.interpreter.IExternalDispatcher;
 public class AndroidDispatcher implements IExternalDispatcher {
 
 	public void dispatch (Action action) {
+
+		
+		
 		
 		
 		System.out.println("Dispatching Action: " + action.getName());

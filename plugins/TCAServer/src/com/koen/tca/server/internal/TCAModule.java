@@ -34,7 +34,7 @@ public class TCAModule implements Module {
 		binder.bind(TCAServer.class);
 
 		/**
-		 * A service which provides Remote Method Invokation facilities to
+		 * A service which provides Remote Method Invocation facilities to
 		 * interact with the TCA Server.
 		 */
 		binder.bind(IRemoteServer.class).to(TestServer.class);

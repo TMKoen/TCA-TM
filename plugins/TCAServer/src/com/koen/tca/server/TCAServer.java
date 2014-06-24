@@ -3,15 +3,15 @@ package com.koen.tca.server;
 import com.google.inject.Inject;
 
 /**
- * This class is the starting point for the server application.
- * For the Equinox - OSGI framework, there are two methods necessary:
- * Start () and Stop ()
- * start () is the main method where the application begins.
+ * This class initiates the server instance.
+ * <p>
+ * @version
+ * @author Koen Nijmeijer
  * 
  */
 public class TCAServer {
 
-	// Injection of the TestServer object
+	// Injection of the TestServer object. It Creates a new TestServer object.
 	@Inject
 	TestServer testServer;
 
@@ -19,11 +19,12 @@ public class TCAServer {
 	 * The starting point where the Server starts.
 	 * <p>
 	 * This the main method where 
+	 * @version
+	 * @author Koen Nijmeijer
 	 * @param
 	 * @return
 	 * @throws Exception
-	 * @version
-	 * @author Koen Nijmeijer
+
 	 * @see TestServer
 	 * 
 	 */

@@ -23,13 +23,13 @@ import com.netxforge.netxtest.DragonXRuntimeModule;
  * OSGI Activator class that starts and stops the <code>TCAServer</code> class.
  * <p>
  * This activator class implements the <code>bundleActivator</code> interface
+ * It also implements the <code>CommandProvider</code> interface 
  * <br>
- * 
  * 
  * @version
  * @author Koen Nijmeijer, Christophe Bouhier
  * @see BundleActivator
- * @see
+ * @see TCAServer
  * 
  */
 public class TCAServerActivator implements BundleActivator, CommandProvider {
@@ -49,11 +49,15 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 	private Map<String, Injector> injectors = Collections.synchronizedMap(Maps
 			.<String, Injector> newHashMapWithExpectedSize(1));
 
-	//
+	// The base server object.
 	private TCAServer server;
 
 	/**
 	 * Starts the Server bundle through the <code>TCAServer</code> class.
+	 * <p>
+	 * This method is the starting point of the server application. Every module that
+	 *  runs under Equinox - OSGI framework must have this method. It is override from 
+	 *  the <code>BundleActivator</code> interface.
 	 * 
 	 * @version
 	 * @author Koen Nijmeijer, Christophe Bouhier
@@ -62,26 +66,46 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 	 */
 	@Override
 	public void start(BundleContext context) throws Exception {
+
+		// save instance handler of itself
 		INSTANCE = this;
 
 		// We contribute OSGI commands here.
 		context.registerService(CommandProvider.class.getName(), this, null);
 
+		// guice makes a new TCAServer object.
 		server = this.getInjector().getInstance(TCAServer.class);
 		server.start();
 
 	}
 
+	/**
+	 * Stops the Server bundle.
+	 * <p>
+	 * This method stops the server application module under the equinox - OSGI framework.
+	 * Every OSGI equinox Module must have a stop method to close all resources nicely.
+	 * 
+	 * @version
+	 * @author Koen Nijmeijer, Christophe Bouhier
+	 * @see TCAServer
+	 * @throws Exception
+	 */
 	@Override
 	public void stop(BundleContext context) throws Exception {
+
+		// Stops the TCAServer object
 		server.stop();
+		
+		// Clears the instance of itself.
 		INSTANCE = null;
 	}
 
 	/**
-	 * Returns the instance of this Singleton object
-	 * 
-	 * @return
+	 * Returns the instance of this object
+	 * <p> 
+	 * @version
+	 * @author Christophe Bouhier
+	 * @return the instance of this object (this).
 	 */
 	public static TCAServerActivator getInstance() {
 		return INSTANCE;
@@ -94,6 +118,8 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 	 * {@value #COM_NETXFORGE_NETXTEST_DRAGONX}. It also binds other services
 	 * from this class specified in the {@link TCAModule}
 	 * 
+	 * @version
+	 * @author Christophe Bouhier
 	 * @param language
 	 * @return a new created injector
 	 * @throws Exception
@@ -176,7 +202,12 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 	}
 
 	/**
-	 * 
+	 * Specifies the shell commands that can be used on the OSGI console to control the Server.
+	 * <p> 
+	 * All methods that begin with '_' and has a CommandInterpreter arguments, are used by OSGI to
+	 * add new commands for the console. 
+	 * @version
+	 * @author Christophe Bouhier
 	 * @param intp
 	 * @return
 	 */
@@ -207,7 +238,8 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 					if (nextArgument3.equals("start_detect")) {
 
 						this.server.getTestServer().getStateMachine()
-								.changeState(ServerEvents.START_DETECT);
+							
+						.changeState(ServerEvents.START_DETECT);
 
 						return "fire event: " + ServerEvents.START_DETECT;
 
@@ -232,6 +264,16 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 		return getHelp();
 	}
 
+	/**
+	 * return a string that explain the OSGI shell commands.
+	 * <p>
+	 * This method is override from the <code>CommandProvider</code> interface.
+	 * It returns a string that explains the own OSGI shell commands.
+	 * 
+	 * @version
+	 * @author Christophe Bouhier
+	 * @see CommandProvider
+	 */
 	@Override
 	public String getHelp() {
 

@@ -122,6 +122,8 @@ public class AndroidDetector extends RemoteUserEquipment {
 
 				Socket clientSocket = serverSocket.accept();
 
+				System.out.println("Server has found the telephone!");
+
 				// gets the message from the Android clients
 				remoteMsg = remoteMessageTransmitter
 						.receiveMessage(clientSocket.getInputStream());
