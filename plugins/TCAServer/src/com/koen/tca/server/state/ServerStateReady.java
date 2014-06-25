@@ -7,24 +7,27 @@ public class ServerStateReady extends AbstractServerState {
 	}
 
 	@Override
-	public void changeState(ServerEvents serverEvent) {
+	public IServerState changeState(ServerEvents serverEvent) {
 
+		IServerState state = this;
+		
 		switch (serverEvent) {
 		case START_DETECT:
 			// server goes to the 'Detect' state.
-			getContext().setState(new ServerStateDetect());
+			state = new ServerStateDetect ();
 			break;
 		case IDLE:
 			// server goes to the 'Idle' state.
-			getContext().setState(new ServerStateIdle());
+			state = new ServerStateIdle ();
 			break;
 		case START_TEST:
-			getContext().setState(new ServerStateTest());
+			state = new ServerStateTest ();
 			break;
 		default:
 			// the other serverEvents are not valid in the 'Ready' state
 			break;
 		}
+		return state;
 
 	}
 

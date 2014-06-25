@@ -32,14 +32,15 @@ public interface IServerState {
 	 * <p>
 	 * The possible states are: Idle, Detect, Ready and Test.
 	 * 
-	 * @param serverEvent
-	 *            represents the event that occurs
+	 * @param serverEvent represents the event that occurs
+	 * @return the new IServerState instance or the old instance if the ServerEvent 
+	 * don't match the present state.
 	 * @see ServerEvents
 	 */
-	public void changeState(ServerEvents serverEvent);
+	public IServerState changeState(ServerEvents serverEvent);
 
 	/**
-	 * Get detailed information about the s
+	 * Get detailed information about the present state
 	 * 
 	 * @return Details information about this {@link IServerState}
 	 */

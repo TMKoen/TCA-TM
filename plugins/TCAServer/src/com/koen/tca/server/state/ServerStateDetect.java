@@ -19,7 +19,7 @@ public class ServerStateDetect extends AbstractServerState {
 	final String threadName = "Detect Thread";
 
 	public ServerStateDetect() {
-
+ 
 		try {
 			androidDetector = new AndroidDetector(8888);
 			androidDetector.setDetectResult(DetectResult.SINGLETON());
@@ -30,28 +30,34 @@ public class ServerStateDetect extends AbstractServerState {
 	}
 
 	@Override
-	public void changeState(ServerEvents serverEvent) {
+	public IServerState changeState(ServerEvents serverEvent) {
+		
+		IServerState state = this;
+		
 		switch (serverEvent) {
 		case STOP_DETECT:
+
 			androidDetector.stopThread();
-			androidDetector = null; // Release this resource.. Maybe
-									// unnecessary, because when changing
-									// States, the old state (this state) is
-									// also released.
+
+			// Release this resource.. Maybe unnecessary, because when changing States, 
+			// the old state (this state) is also released.
+			androidDetector = null; 
 
 			// server goes to the wait state. UE's are present.
-			getContext().setState(new ServerStateReady());
+			state = new ServerStateReady ();
 			break;
 		case STOP_DETECT_NO_UE:
 
 			androidDetector.stopThread();
-			androidDetector = null; // Garbage collected..
-			// server goes to the 'Idle' state. No UE's are present.
-			getContext().setState(new ServerStateIdle());
+			
+			// Garbage collected.. Server goes to the 'Idle' state. No UE's are present.
+			androidDetector = null; 
+			state = new ServerStateIdle ();
 		default:
 			// the other serverEvents are not valid in the 'Connect' state
 			break;
 		}
+		return state;
 	}
 
 	@Override

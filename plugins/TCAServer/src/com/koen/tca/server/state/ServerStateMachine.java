@@ -1,7 +1,7 @@
 package com.koen.tca.server.state;
 
 /**
- * Handels the state for the Server.
+ * Handles the state for the Server.
  * 
  * @version
  * @author Koen Nijmeijer
@@ -19,15 +19,25 @@ public class ServerStateMachine implements IStateCallBack {
 	}
 
 	public void changeState(ServerEvents serverEvent) {
+		
 		if (presentState != null) {
 
-			// FIXME, This has side effect of change presentState! Very bad
-			// coding practise.
-			presentState.changeState(serverEvent);
+			IServerState state = presentState.changeState(serverEvent);
 
-			// The presentState changed, we can not activate it.
-			presentState.activateState(this);
+			// check if the state was changed. If not, stay in the present state.
+			if (!presentState.equals(state)) {
+
+				// a new IServerState object is created.
+				presentState = state;
+
+				// The presentState is changed, we can now activate it.
+				presentState.activateState(this);				
+			} else {
+				// the state wasn't changed because of a wrong ServerEvent.
+			}
 		} else {
+			// The state of the server is floating. NOT GOOD!! It must always Idle, Detect, Ready or Test. 
+			
 			// Prints the string generated in the toString () method.
 			System.out.println(this);
 		}

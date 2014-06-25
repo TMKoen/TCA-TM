@@ -16,19 +16,22 @@ public class ServerStateTest extends AbstractServerState {
 	}
 
 	@Override
-	public void changeState(ServerEvents serverEvent) {
+	public IServerState changeState(ServerEvents serverEvent) {
 
+		IServerState state = this;
+		
 		switch (serverEvent) {
 
 		case STOP_TEST:
 		case FINISHED:
 			// The Server goes to the 'Wait' state
-			getContext().setState(new ServerStateReady());
+			state = new ServerStateReady ();
 			break;
 		default:
 			// the other serverEvents are not valid in the 'Test' state
 			break;
 		}
+		return state;
 
 	}
 
