@@ -10,14 +10,11 @@ import android.os.Handler;
 import android.os.Message;
 
 import com.koen.tca.android.DeviceIdentifier;
-import com.koen.tca.android.state.AndroidEvents;
-//import com.koen.tca.android.wrapper.RemoteMessageTransmitter;
-//import com.koen.tca.android.wrapper.IMessage;
-//import com.koen.tca.android.wrapper.MessageChangeState;
-//import com.koen.tca.android.wrapper.MessageExpose;
-import com.koen.tca.android.wrapper.MessageChangeState;
+import com.koen.tca.common.message.AcknowledgeMessage;
+import com.koen.tca.common.message.AndroidEvents;
+import com.koen.tca.common.message.ChangeStateMessage;
+import com.koen.tca.common.message.ExposeMessage;
 import com.koen.tca.common.message.IMessage;
-import com.koen.tca.common.message.MessageExpose;
 import com.koen.tca.common.message.RemoteMessageTransmitter;
 
 /**
@@ -34,9 +31,18 @@ public class ThreadExpose implements IThreadState {
 
 	private Thread threadExpose;
 	private final String threadName = "Expose";
+
+	// The client socket which connect to the server.
 	private Socket clientSocket;
+	
+	// timeout for reading (received) messages 
+	private final int readTimeout = 1000*30;
+	// timeout for the socket to wait for a connection
+	private final int socketTimeout = 1000*60;	
+
+	
 	private Handler mainHandler;
-	private final int socketTimeout = 30000;
+
 	
 	public ThreadExpose () {
 		threadExpose = null;
@@ -63,14 +69,12 @@ public class ThreadExpose implements IThreadState {
 	public void run() {
 
 		IMessage changeStateMsg = null;
+		
+		// Initialize the default AndroidEvent if there is no even received from the server.
 		AndroidEvents event = AndroidEvents.STOP_EXPOSE_NO_SERVER;
 		
 		// Create an object which can handle messages (sending/receiving) to and from the Server.
 		RemoteMessageTransmitter messageTransmitter = new RemoteMessageTransmitter ();
-		
-		
-		
-		
 
 		// Gets the object thats has the IMEI and Telephone number of the phone.
 		DeviceIdentifier device = DeviceIdentifier.SINGLETON();
@@ -80,6 +84,8 @@ public class ThreadExpose implements IThreadState {
 				InetSocketAddress serverAddress = new InetSocketAddress (device.getServerIpAddress(), device.getSocketPortNumber());
 				
 				clientSocket = new Socket();
+				
+				// connect to the server with a timeout interval if the server is not responding.
 				clientSocket.connect(serverAddress,socketTimeout);
 		
 // 				old method without timeout!!!				
@@ -87,25 +93,34 @@ public class ThreadExpose implements IThreadState {
 	
 				// Sends a MessageExpose message to the Server.
 				// MessageExpose has the IMEI and telephone number to the Android device.
-				messageTransmitter.sendMessage(new MessageExpose(device.getImeiNumber(), 
-						device.getTelephoneNumber()), 
-						clientSocket.getOutputStream());
+				messageTransmitter.setOutputStream(clientSocket.getOutputStream());
 
-				changeStateMsg = messageTransmitter.receiveMessage(clientSocket.getInputStream());
+				// Send a Expose message to the server.
+				messageTransmitter.sendMessage(new ExposeMessage (device.getImeiNumber(), 
+						device.getTelephoneNumber()));
+
+				// Initialize the input stream.
+				messageTransmitter.setInputStream(clientSocket.getInputStream());
+
+				// receive a ChangeState message from the server.
+				changeStateMsg = messageTransmitter.receiveMessage(clientSocket, readTimeout );
 
 				// The server must send a ChangeState message after he receives Expose message. 
-				if (changeStateMsg instanceof MessageChangeState ) {
+				// If there was an IO exception or a timeout, than the message = null.
+				if (changeStateMsg != null && changeStateMsg instanceof ChangeStateMessage ) {
 					// gets the event from the received message
-					event = ((MessageChangeState)changeStateMsg).getEvent();
+					event = ((ChangeStateMessage)changeStateMsg).getEvent();
+					
+					// Sends an Acknowledge message to the server with a text: "Close".
+					messageTransmitter.sendMessage(new AcknowledgeMessage("Close"));
+					
 				} else {
-					// something goes wrong. te server must send a ChangeState messages after exposer
+					// something goes wrong. the server must send a ChangeState messages after expose.
+					// An IO exception can occurred or a timeout while waiting on a message.
+					// No Acknowledge has to be send because of the IO exception or the timeout.
+					// the event = STOP_EXPOSE_NO_SERVER
 				}
-	 				
-				// sends the event to the main thread (UI thread).
-				Message msg = mainHandler.obtainMessage();
-				msg.obj = event;
-				mainHandler.sendMessage (msg);
-				
+	 								
 			} catch (UnknownHostException e) {
 				// Timeout was occurred 
 
@@ -113,29 +128,30 @@ public class ThreadExpose implements IThreadState {
 				e.printStackTrace();
 			} catch (IllegalArgumentException e) {
 				// No valid host address. Thrown by clientsocket.connect(..)
+
 			} catch (ConnectException e) {
 				e.printStackTrace();
 				
 			} catch (IOException e) {
-				// Timeout. No server found!
-				Message msg = mainHandler.obtainMessage();
-				msg.obj = AndroidEvents.STOP_EXPOSE_NO_SERVER;
-				mainHandler.sendMessage(msg);
-				
+				e.printStackTrace();
 			} finally {
+				messageTransmitter.closeOutputStream();
+				messageTransmitter.closeInputStream();
+				
 				if (clientSocket != null) {
 					try {
-						clientSocket.close();
+						clientSocket.close();			
+
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
+					
+					// sends the event to the main thread (UI thread).
+					Message msg = mainHandler.obtainMessage();
+					msg.obj = event;
+					mainHandler.sendMessage (msg);
 				}
 			}
 		}
-			
-	
-
-	}
-
-	
+	} // run ()
 }

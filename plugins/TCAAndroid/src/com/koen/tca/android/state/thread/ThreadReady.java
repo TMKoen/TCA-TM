@@ -8,20 +8,14 @@ import android.os.Handler;
 import android.os.Message;
 
 import com.koen.tca.android.DeviceIdentifier;
-import com.koen.tca.android.state.AndroidEvents;
-import com.koen.tca.android.wrapper.MessageChangeState;
-import com.koen.tca.common.message.ActionMessage;
+import com.koen.tca.common.message.AndroidEvents;
 import com.koen.tca.common.message.ChangeStateMessage;
+import com.koen.tca.common.message.ActionMessage;
 import com.koen.tca.common.message.IMessage;
-import com.koen.tca.common.message.MessageExpose;
+import com.koen.tca.common.message.ExposeMessage;
 import com.koen.tca.common.message.RemoteAction;
 import com.koen.tca.common.message.RemoteMessageTransmitter;
-//import com.koen.tca.android.wrapper.IMessage;
-//import com.koen.tca.android.wrapper.IntentAction;
-//import com.koen.tca.android.wrapper.MessageChangeState;
-//import com.koen.tca.android.wrapper.ReadyDataWrapper;
-//import com.koen.tca.android.wrapper.RemoteMessageTransmitter;
-//import com.koen.tca.android.wrapper.MessageAction;
+
 
 public class ThreadReady implements IThreadState {
 
@@ -29,8 +23,9 @@ public class ThreadReady implements IThreadState {
 	private Handler mainHandler;
 	private boolean stopThread;
 	private ServerSocket androidServerSocket;
-	private int timeout = 1000 * 5;
-
+	private final int timeout = 1000 * 60;
+	private final int readTimeout = 1000 * 30;
+	
 	final String threadName = "Ready thread";
 
 	public ThreadReady() {
@@ -79,8 +74,8 @@ public class ThreadReady implements IThreadState {
 					// waits for a command from the Server or a timeout occurs.
 					Socket clientSocket = androidServerSocket.accept();
 
-					remoteMsg = messageTransmitter.receiveMessage(clientSocket
-							.getInputStream());
+					messageTransmitter.setInputStream(clientSocket.getInputStream());
+					remoteMsg = messageTransmitter.receiveMessage(clientSocket, readTimeout);
 
 					// Change this to
 
@@ -126,7 +121,7 @@ public class ThreadReady implements IThreadState {
 
 					} else if (remoteMsg instanceof ChangeStateMessage) {
 						// gets the event from the received message
-						event = ((MessageChangeState) remoteMsg).getEvent();
+						event = ((ChangeStateMessage) remoteMsg).getEvent();
 
 						// sends the event to the main thread (UI thread).
 						Message msg = mainHandler.obtainMessage();
@@ -136,7 +131,7 @@ public class ThreadReady implements IThreadState {
 						// go out the thread
 						setStopThread(true);
 						break;
-					} else if (remoteMsg instanceof MessageExpose) {
+					} else if (remoteMsg instanceof ExposeMessage) {
 
 					}
 

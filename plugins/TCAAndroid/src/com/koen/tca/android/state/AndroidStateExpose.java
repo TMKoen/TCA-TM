@@ -1,7 +1,9 @@
 package com.koen.tca.android.state;
 
 import android.os.Handler;
+
 import com.koen.tca.android.state.thread.ThreadExpose;
+import com.koen.tca.common.message.AndroidEvents;
 
 /**
  * represents the Expose state.

@@ -6,10 +6,10 @@ import java.net.Socket;
 
 import com.koen.tca.android.ActionRunner;
 import com.koen.tca.android.DeviceIdentifier;
-import com.koen.tca.android.state.AndroidEvents;
-import com.koen.tca.android.wrapper.IMessage;
-import com.koen.tca.android.wrapper.MessageChangeState;
-import com.koen.tca.android.wrapper.RemoteMessageTransmitter;
+import com.koen.tca.common.message.AndroidEvents;
+import com.koen.tca.common.message.IMessage;
+import com.koen.tca.common.message.ChangeStateMessage;
+import com.koen.tca.common.message.RemoteMessageTransmitter;
 
 import android.os.Handler;
 import android.os.Message;
@@ -22,7 +22,10 @@ public class ThreadTest implements IThreadState {
 	private Handler mainHandler;
 	
 	private ServerSocket androidServerSocket;
-	private int timeout = 1000*5;
+	private final int timeout = 1000*60;
+	
+	// timeout for reading a message from the server.
+	private final int readTimeout = 1000*30;
 	
 	private ThreadStartAction threadStartAction;
 	
@@ -82,8 +85,9 @@ public class ThreadTest implements IThreadState {
 
 					// waits for a command from the Server or a timeout occurs.
 					Socket clientSocket = androidServerSocket.accept();
-			
-					remoteMsg = messageTransmitter.receiveMessage(clientSocket.getInputStream());
+
+					// TODO: init ObjectInput/Output stream
+					remoteMsg = messageTransmitter.receiveMessage(clientSocket, readTimeout);
 					if (remoteMsg != null) {
 				
 						// Gets the type of the message in a string value
@@ -92,7 +96,7 @@ public class ThreadTest implements IThreadState {
 						if (messageType.equals("ChangeState_Message")) {
 
 							// gets the event from the received message
-							event = ((MessageChangeState)remoteMsg).getEvent();
+							event = ((ChangeStateMessage)remoteMsg).getEvent();
 		 				
 							// sends the event to the main thread (UI thread).
 							Message msg = mainHandler.obtainMessage();

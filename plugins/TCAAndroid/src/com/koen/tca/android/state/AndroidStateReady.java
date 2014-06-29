@@ -1,10 +1,9 @@
 package com.koen.tca.android.state;
 
 import android.os.Handler;
-import android.os.Looper;
 
-import com.koen.tca.android.state.thread.ThreadExpose;
 import com.koen.tca.android.state.thread.ThreadReady;
+import com.koen.tca.common.message.AndroidEvents;
 
 
 

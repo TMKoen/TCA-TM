@@ -1,28 +1,16 @@
 package com.koen.tca.android;
 
 import com.koen.tca.android.DeviceIdentifier;
-import com.koen.tca.android.state.AndroidEvents;
 import com.koen.tca.android.state.AndroidStateMachine;
 import com.koen.tca.android.state.AndroidStateTest;
-import com.koen.tca.android.state.IAndroidState;
-import com.koen.tca.android.util.SystemUiHider;
 
 
+import com.koen.tca.common.message.AndroidEvents;
 
-
-
-
-
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
-import android.telephony.TelephonyManager;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -65,7 +53,7 @@ public class TcaMainActivity extends Activity {
 	private AndroidStateMachine androidState;
 	
 	// The port number for the socket connection to the Server.
-	private final int PORTNUMBER = 1099;
+	private final int PORTNUMBER = 8888;
 	
 	// handler to catch messages from other threads (to the main thread). These messages 
 	// has to do with changing the state of the Android (Idle, Expose, Ready or Test).
@@ -150,6 +138,7 @@ public class TcaMainActivity extends Activity {
 					// It the wrong event is send, the present state is'n changed.
 					// So the thread (or the Server) that sends this message,
 					// must be aware of the present state.
+					
 					androidState.changeState(event, mainHandler);
 				
 					// Displays the Android device state on the UI.
