@@ -3,6 +3,7 @@
 	<name>com.koen.tca.server</name>
 	<comment></comment>
 	<projects>
+		<project>com.koen.tca.common</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

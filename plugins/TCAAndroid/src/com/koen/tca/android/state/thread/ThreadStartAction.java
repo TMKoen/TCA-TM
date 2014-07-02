@@ -8,6 +8,7 @@ public class ThreadStartAction implements IThreadState {
 
 	// Handler to this thread
 	private Thread startActionThread;
+	@SuppressWarnings("unused")
 	private Handler mainHandler;
 
 

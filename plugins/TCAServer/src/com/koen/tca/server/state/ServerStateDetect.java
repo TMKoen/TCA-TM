@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.koen.tca.server.thread.AndroidDetector;
 
+
 /**
  * class that represents the state 'Detect'. It inherent the abstract class
  * <code>AbstractServerState</code> which in turn inherent from the interface
