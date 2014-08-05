@@ -31,10 +31,10 @@ public class AndroidDetector extends RemoteUserEquipment {
 	private ServerSocket serverSocket;
 
 	// Timeout is set to 60 seconds
-	private final int timeout = 1000 * 60;
+	private final int timeout = 1000 * 15;
 
 	// Timeout for reading messages from an input stream.
-	private final int readTimeout = 1000*30;
+	private final int readTimeout = 1000*15;
 	
 	// Handler to the Thread and the name of the thread.
 	private Thread androidThread;
@@ -241,7 +241,7 @@ public class AndroidDetector extends RemoteUserEquipment {
 		finally {		
 				closeServerConnection();
 				// TODO: ending must be removed i think. 
-				stateCallBack.ending();
+//				stateCallBack.ending();
 			}
 		
 	}   // run ()
@@ -309,24 +309,30 @@ public class AndroidDetector extends RemoteUserEquipment {
 
 		stopThread = true;
 		
-		// Close our socket, it will otherwise block the Thread method from closing. 
-		try {
-			serverSocket.close();
-		} catch (IOException e1) {
-			e1.printStackTrace();
+
+		System.out.println("Stopping detecting mode....");
+
+// TODO: This must work somehow! Know it blocks.. 		
+/*		try {
+			androidThread.join();
+		} catch (InterruptedException e) {
+ 			e.printStackTrace();
 		}
+*/
 		
 		do {
-			
 			try {
 				
 				this.wait(1000);
+
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			// wait until the thread is totally stopped.
 		} while (androidThread.isAlive());
 
+
+		
 		// safe? after stopThread = true, the thread is not directly stopped!!
 		androidThread = null;
 	}

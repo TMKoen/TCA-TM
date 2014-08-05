@@ -1,5 +1,6 @@
 package com.koen.tca.server.internal;
 
+import java.rmi.RemoteException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -17,6 +18,10 @@ import com.google.inject.Module;
 import com.koen.tca.server.TCAServer;
 import com.koen.tca.server.state.IServerState;
 import com.koen.tca.server.state.ServerEvents;
+import com.koen.tca.server.state.ServerStateDetect;
+import com.koen.tca.server.state.ServerStateIdle;
+import com.koen.tca.server.state.ServerStateReady;
+import com.koen.tca.server.state.ServerStateTest;
 import com.netxforge.netxtest.DragonXRuntimeModule;
 
 /**
@@ -207,63 +212,127 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 	 * All methods that begin with '_' and has a CommandInterpreter arguments, are used by OSGI to
 	 * add new commands for the console. 
 	 * @version
-	 * @author Christophe Bouhier
+	 * @author Christophe Bouhier, Koen Nijmeijer
 	 * @param intp
 	 * @return
 	 */
 	public Object _tca(CommandInterpreter intp) {
+
+		// The event that was fired.
+		ServerEvents fireEvent = null;
+		
+		// gets the present state of the server.
+		IServerState state = this.server.getTestServer ()
+				.getStateMachine ().getState ();
+
+		// The message to be send to the user.
+		String message = "Wrong or no arguments!\n" + getHelp();
+		
+		// Other arguments on the command line.
+		String nextArgument2 = null;
+		String nextArgument3 = null;
+		
+		// get the next command line argument after 'tca'..
 		String nextArgument = intp.nextArgument();
+		
+		// There must be an argument after 'tca' on the command line
 		if (nextArgument != null) {
+			
+			// this command line argument can be used in all the server states.
 			if (nextArgument.equals("state")) {
-				IServerState state = this.server.getTestServer()
-						.getStateMachine().getState();
-				StringBuilder sb = new StringBuilder();
 
-				sb.append("The current server state is: " + state);
-
-				String nextArgument2 = intp.nextArgument();
+				// finds the next argument if any.
+				nextArgument2 = intp.nextArgument();
 				if (nextArgument2 != null) {
 					if (nextArgument2.equals("details")) {
-						sb.append("\n Details:\n-------------\n"
-								+ state.details());
-					} else {
+
+						// check is there is no other argument on the command line.
+						nextArgument3 = intp.nextArgument();
+						if (nextArgument3 == null) {
+							message = "\n Details:\n-------------\n" + state.details();
+						}
 					}
-				}
-				// Do something with the TCA Server state.
-				return sb.toString();
-			} else if (nextArgument.equals("event")) {
-				String nextArgument3 = intp.nextArgument();
-				if (nextArgument3 != null) {
-
-					if (nextArgument3.equals("start_detect")) {
-
-						this.server.getTestServer().getStateMachine()
-							
-						.changeState(ServerEvents.START_DETECT);
-
-						return "fire event: " + ServerEvents.START_DETECT;
-
-					} else if (nextArgument3.equals("stop_detect")) {
-
-						this.server.getTestServer().getStateMachine()
-								.changeState(ServerEvents.STOP_DETECT);
-
-						return "fire event:" + ServerEvents.STOP_DETECT;
-
-					} else {
-						return "The event " + nextArgument3
-								+ " is unknown to tca";
-					}
-
 				} else {
-					// we need a state for the transition.
-					return getHelp();
+					message = "The current server state is: " + state;					
 				}
-			}
+				
+			} else if (nextArgument.equals("upload")) {
+				nextArgument2 = intp.nextArgument();
+				if (nextArgument2 != null) {
+					// TODO: check the path and testcase name..
+					message = "TODO: upload";
+				}
+
+			} else if (nextArgument.equals("result")) {
+				nextArgument2 = intp.nextArgument();
+				// check if there is no other argument on the command line.
+				if (nextArgument2 == null) {
+					message = "TODO: result";					
+				}
+			} else if (nextArgument.equals("event")) {
+				nextArgument2 = intp.nextArgument();
+				if (nextArgument2 != null) {
+					message = eventArgument(state, nextArgument2);
+				} 
+			} 
 		}
-		return getHelp();
+		return message;			
 	}
 
+	private String eventArgument (IServerState state, String argument) {
+
+		String message = "fire event: ";
+		if (argument != null) {
+			if (argument.equals("idle") && (state instanceof ServerStateReady)) {
+				// change server state to idle
+				try {
+				server.getTestServer().idle();
+				message += ServerEvents.IDLE;				
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+
+			} else if (argument.equals("start_detect") && (state instanceof ServerStateIdle || state instanceof ServerStateReady)) {
+				// change server state to detect
+				try {
+					server.getTestServer().startDetect(null);
+					message += ServerEvents.START_DETECT;
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+				
+			} else if (argument.equals("stop_detect") && state instanceof ServerStateDetect) {
+				// change server state to Ready or Idle, depends on the founded Android device.
+				try {
+					server.getTestServer().stopDetect(null);
+					message += ServerEvents.STOP_DETECT;
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+			} else if (argument.equals("start_test") && state instanceof ServerStateReady) {
+				try {
+					server.getTestServer().startTestSet(null, "");
+					message += ServerEvents.START_TEST;
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+			} else if (argument.equals("stop_test") && state instanceof ServerStateTest) {
+				try {
+					server.getTestServer().stopTest(null);
+					message += ServerEvents.STOP_TEST;
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+			} else {
+				message = "Wrong event or wrong state for that event!\n" + getHelp();
+			}
+		} else {
+			// empty argument
+			message += "no event\n" + getHelp();
+		}
+		return message;
+	}
+	
 	/**
 	 * return a string that explain the OSGI shell commands.
 	 * <p>
@@ -279,9 +348,20 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 
 		return "---TCA Commands"
 				+ "\n       With TCA commands the following activities are supported "
-				+ "\n     - Manage the TCA Server" 
+				+ "\n      In Idle state:"
+				+ "\n           - event start_detect"
+				+ "\n      In Detect state:"
+				+ "\n           - event stop_detect"
+				+ "\n      In Ready state:"
+				+ "\n           - event start_detect"
+				+ "\n           - event start_test"
+				+ "\n           - event idle"
+				+ "\n           - upload <testcase>"
+				+ "\n           - results"
+				+ "\n      In Test state:"
+				+ "\n           -event stop_test"
+				+ "\n      in any state:"
 				+ "\n       state [details] Optionally ask for details of the current state"
-				+ "\n       event start_detect|stop_detect"
 				+ "\n     - [TODO]View various TCA Server objects";
 	}
 }

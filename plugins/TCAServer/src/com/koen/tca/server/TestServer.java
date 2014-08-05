@@ -12,6 +12,7 @@ import java.util.Enumeration;
 import com.google.inject.Inject;
 import com.koen.tca.server.state.DetectResult;
 import com.koen.tca.server.state.ServerEvents;
+import com.koen.tca.server.state.ServerStateIdle;
 import com.koen.tca.server.state.ServerStateMachine;
 
 /**
@@ -185,6 +186,21 @@ public class TestServer extends java.rmi.server.UnicastRemoteObject implements
 
 	public ServerStateMachine getStateMachine() {
 		return stateMachine;
+	}
+
+	/**
+	 * change the Ready state to Idle. Other states can't go back to the Idle state via this method.
+	 */
+	@Override
+	public synchronized void idle() throws RemoteException {
+		// get the list with known Android devices.
+		DetectResult detectResult = DetectResult.SINGLETON();
+		
+		stateMachine.changeState(ServerEvents.IDLE);
+		if (stateMachine.getState() instanceof ServerStateIdle) {
+			// clear the list.
+			detectResult.getValidUEList().clear();
+		}
 	}
 
 } // class TestServer

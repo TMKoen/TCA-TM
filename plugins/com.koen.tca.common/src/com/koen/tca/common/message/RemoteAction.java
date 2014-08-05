@@ -22,6 +22,11 @@ public class RemoteAction implements Serializable {
 	 // Holds the Action parameters.
 	private Map<String, String> map;
 	
+	// Holds the UE parameters. 
+	// The first String is the name of the parameter.
+	private Map<String, RemoteUe> ueMap;
+
+	// constructor
 	public RemoteAction (String actionName) {
 
 		// Sets the action name.
@@ -29,6 +34,10 @@ public class RemoteAction implements Serializable {
 
 		// Initialize the map that holds the Action parameters.
 		map = new HashMap<String, String>();
+		
+		// Initialize the ueMap
+		ueMap = new HashMap<String, RemoteUe>();
+
 	}
 	
 	/**
@@ -67,6 +76,12 @@ public class RemoteAction implements Serializable {
 		return map;
 	}
 
+	// Holds the UE parameters in a Map object.
+	// The first String of the Map<String, RemoteUe> is the name of the UE parameter
+	public Map<String, RemoteUe> getUeMap () {
+		return ueMap;
+	}
+	
 	/**
 	 * Overrides <code>toString()</code> method.
 	 * @version

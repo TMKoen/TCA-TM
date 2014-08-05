@@ -33,7 +33,7 @@ public class ServerStateReady extends AbstractServerState {
 
 	@Override
 	public String toString() {
-		return "I am currently ready...ready for what??";
+		return "I am currently ready..";
 	}
 
 }

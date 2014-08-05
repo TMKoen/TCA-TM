@@ -57,6 +57,11 @@ public interface IRemoteServer extends Remote {
 	 */
 	public void stopTest(ICallBackClient callBackClient) throws RemoteException;
 
+	/**
+	 * return to the Idle state and clears the Android list.
+	 * @throws RemoteException
+	 */
+	public void idle () throws RemoteException;
 	
 	public TestResults getTestResults () throws RemoteException;
 	

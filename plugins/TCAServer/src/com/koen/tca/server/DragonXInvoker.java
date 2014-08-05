@@ -19,15 +19,16 @@ import com.netxforge.netxtest.interpreter.IExternalDispatcher;
 /**
  * A service for calling the Dragon X Interpreter. Injects a Factory for
  * producing XTextResources.
- * 
+ * @version
+ * @author Christophe Bouhier
  */
 public class DragonXInvoker {
 
 	@Inject
 	private IResourceFactory xResourceFactory;
 
-	@Inject
-	private FolderPollingService scriptObtainer;
+//	@Inject
+	private FolderPollingService scriptObtainer = new FolderPollingService ();
 
 	@Inject
 	private DragonXInterpreter interpreter;
@@ -72,9 +73,12 @@ public class DragonXInvoker {
 			// Get all the files in the directory.
 			// NOTE: Directory is hard-coded.
 
+			// search all the dragonX files
+			scriptObtainer.poll ();
+
 			File[] filesInDirectory = scriptObtainer.getFilesInDirectory();
 
-			if (filesInDirectory.length > 1) {
+			if (filesInDirectory.length > 0) {
 				URI fileAsURI = scriptObtainer.fileAsURI(filesInDirectory[0]);
 
 				XtextResource scriptAsResource = this.doGetResource(fileAsURI);

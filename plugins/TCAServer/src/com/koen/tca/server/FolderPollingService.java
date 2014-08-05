@@ -1,6 +1,7 @@
 package com.koen.tca.server;
 
 import java.io.File;
+import java.io.FileFilter;
 
 import org.eclipse.emf.common.util.URI;
 
@@ -16,19 +17,42 @@ public class FolderPollingService {
 	private File[] filesInDirectory;
 
 	public FolderPollingService() {
+		// Sets the script path to the default test set.
+		scriptPath = "c:\\tcaserver\\testsets\\default\\";
 	}
 
 	public void poll() {
 
-		if (scriptPath == null) {
-			return; // Can poll unknown directory.
-		}
+		try {
 
-		final File rootFile = new File(scriptPath);
-		if (rootFile.isDirectory()) {
+			if (scriptPath == null) {
+				return; // Can't poll unknown directory.
+			}
 
-			// Optionally specify a filter to find DragonX Files.
-			filesInDirectory = rootFile.listFiles();
+			final File rootFile = new File(scriptPath);
+			if (rootFile.isDirectory()) {
+				// Optionally specify a filter to find DragonX Files.
+				filesInDirectory = rootFile.listFiles();
+				
+/*
+				FileFilter filter = new FileFilter () {
+					@Override
+					public boolean accept (File pathname) {
+						return pathname.toLowerCase().endsWith(".xtext");
+					}
+				}
+
+
+				filesInDirectory = rootFile.listFiles(new FileNameFilter () {
+					public boolean accept (File dir, String name) {
+						return name.toLowerCase().endsWith(".xtext");
+					}
+				});
+			}
+	*/
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
