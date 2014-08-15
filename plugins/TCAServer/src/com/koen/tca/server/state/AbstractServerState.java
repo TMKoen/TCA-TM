@@ -45,5 +45,4 @@ public abstract class AbstractServerState implements IServerState,
 	public void ending() {
 		context.ending();
 	}
-
 }

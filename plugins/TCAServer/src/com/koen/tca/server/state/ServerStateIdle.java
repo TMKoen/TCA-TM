@@ -7,12 +7,15 @@ public class ServerStateIdle extends AbstractServerState {
 	}
 
 	/**
-	 * 	returns a new IServerState object.
+	 * returns a new IServerState object.
 	 * <p>
+	 * 
 	 * @version
 	 * @author Koen Nijmeijer
-	 * @param serverEvent the ServerEvent that change the present state. 
-	 * @return the new IServerState object or the old one (this) if it can't change te state.
+	 * @param serverEvent
+	 *            the ServerEvent that change the present state.
+	 * @return the new IServerState object or the old one (this) if it can't
+	 *         change te state.
 	 */
 	@Override
 	public IServerState changeState(ServerEvents serverEvent) {
@@ -20,7 +23,7 @@ public class ServerStateIdle extends AbstractServerState {
 		IServerState state = this;
 		switch (serverEvent) {
 		case START_DETECT:
-			state = new ServerStateDetect();
+			state = getContext().createState(STATES.DETECT);
 			break;
 		default:
 			// Other ServerEvents are not allowed.

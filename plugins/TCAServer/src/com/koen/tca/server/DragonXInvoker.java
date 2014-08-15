@@ -19,6 +19,7 @@ import com.netxforge.netxtest.interpreter.IExternalDispatcher;
 /**
  * A service for calling the Dragon X Interpreter. Injects a Factory for
  * producing XTextResources.
+ * 
  * @version
  * @author Christophe Bouhier
  */
@@ -27,8 +28,8 @@ public class DragonXInvoker {
 	@Inject
 	private IResourceFactory xResourceFactory;
 
-//	@Inject
-	private FolderPollingService scriptObtainer = new FolderPollingService ();
+	@Inject
+	private FolderPollingService scriptObtainer;
 
 	@Inject
 	private DragonXInterpreter interpreter;
@@ -64,17 +65,16 @@ public class DragonXInvoker {
 	 * AST. This will emmit actions on the specified {@link IExternalDispatcher}
 	 */
 	public void invoke() {
-		
-		// TODO Create a runnable. 
-		
-		
+
+		// TODO Create a runnable.
+
 		try {
 
 			// Get all the files in the directory.
 			// NOTE: Directory is hard-coded.
 
 			// search all the dragonX files
-			scriptObtainer.poll ();
+			scriptObtainer.poll();
 
 			File[] filesInDirectory = scriptObtainer.getFilesInDirectory();
 
@@ -88,7 +88,7 @@ public class DragonXInvoker {
 						EObject eObject = contents.get(0);
 						if (eObject instanceof DragonX) {
 							DragonX script = (DragonX) eObject;
-							
+
 							// Setup the interpreter.
 							interpreter.setExtDispatcher(androidDispatcher);
 							interpreter.evaluate(script);
@@ -104,14 +104,14 @@ public class DragonXInvoker {
 				// No files throw Exception
 			}
 		} catch (Exception e) {
-
+			e.printStackTrace();
 			// catch any other exception
 		}
 	}
 
 	@Override
 	public String toString() {
-		
-		return scriptObtainer.toString(); 
+
+		return scriptObtainer.toString();
 	}
 }

@@ -26,8 +26,8 @@
 
    <features>
       <feature id="com.koen.tca.server.feature" version="1.0.0.qualifier"/>
-      <feature id="org.eclipse.emf.common" version="2.9.2.v20131212-0545"/>
-      <feature id="org.eclipse.emf.ecore" version="2.9.2.v20131212-0545"/>
+      <feature id="org.eclipse.emf.common"/>
+      <feature id="org.eclipse.emf.ecore"/>
    </features>
 
 

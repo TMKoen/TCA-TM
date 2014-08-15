@@ -1,7 +1,6 @@
 package com.koen.tca.server;
 
 import java.io.File;
-import java.io.FileFilter;
 
 import org.eclipse.emf.common.util.URI;
 
@@ -18,7 +17,7 @@ public class FolderPollingService {
 
 	public FolderPollingService() {
 		// Sets the script path to the default test set.
-		scriptPath = "c:\\tcaserver\\testsets\\default\\";
+		scriptPath = "/Users/Christophe/Desktop/dragonX";
 	}
 
 	public void poll() {

@@ -10,18 +10,18 @@ public class ServerStateReady extends AbstractServerState {
 	public IServerState changeState(ServerEvents serverEvent) {
 
 		IServerState state = this;
-		
+
 		switch (serverEvent) {
 		case START_DETECT:
 			// server goes to the 'Detect' state.
-			state = new ServerStateDetect ();
+			state = getContext().createState(STATES.DETECT);
 			break;
 		case IDLE:
 			// server goes to the 'Idle' state.
-			state = new ServerStateIdle ();
+			state = getContext().createState(STATES.IDLE);
 			break;
 		case START_TEST:
-			state = new ServerStateTest ();
+			state = getContext().createState(STATES.TEST);
 			break;
 		default:
 			// the other serverEvents are not valid in the 'Ready' state

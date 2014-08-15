@@ -34,8 +34,8 @@ public class AndroidDetector extends RemoteUserEquipment {
 	private final int timeout = 1000 * 15;
 
 	// Timeout for reading messages from an input stream.
-	private final int readTimeout = 1000*15;
-	
+	private final int readTimeout = 1000 * 15;
+
 	// Handler to the Thread and the name of the thread.
 	private Thread androidThread;
 
@@ -78,21 +78,21 @@ public class AndroidDetector extends RemoteUserEquipment {
 	}
 
 	/**
-	 * a new Thread is activated from the <code>ActivateState ()</code> method in the class
-	 * <code>ServerStateDetect</code> (implemented in class TestServer). This is the run()
-	 * method of that Thread. It handles the actions for detecting Android
-	 * devices (UE's).
+	 * a new Thread is activated from the <code>ActivateState ()</code> method
+	 * in the class <code>ServerStateDetect</code> (implemented in class
+	 * TestServer). This is the run() method of that Thread. It handles the
+	 * actions for detecting Android devices (UE's).
 	 * <p>
-	 * This thread stays in a loop until the user calls <code>stopThread ()</code>. In the loop, we are
-	 * waiting for a connection establishing with a Android device. After the connection is made,
-	 * the server receives a <code>ExposeMessage</code> message with holds the IMEI and the telephone number
-	 * of the Android device.
-	 * After this, the server sends a <code>ChangeStateMessage</code> message so Android device can
-	 * go to the Ready state.
-	 * The Android device sends a <code>AcknowledgeMessage</code> message to the Server and close the
-	 * connection.
-	 * PS: The Android device must first close the connection before the server does. Otherwise the
-	 * server goes in an WAIT_TIME state.
+	 * This thread stays in a loop until the user calls
+	 * <code>stopThread ()</code>. In the loop, we are waiting for a connection
+	 * establishing with a Android device. After the connection is made, the
+	 * server receives a <code>ExposeMessage</code> message with holds the IMEI
+	 * and the telephone number of the Android device. After this, the server
+	 * sends a <code>ChangeStateMessage</code> message so Android device can go
+	 * to the Ready state. The Android device sends a
+	 * <code>AcknowledgeMessage</code> message to the Server and close the
+	 * connection. PS: The Android device must first close the connection before
+	 * the server does. Otherwise the server goes in an WAIT_TIME state.
 	 * 
 	 * @version
 	 * @author Koen Nijmeijer
@@ -102,12 +102,12 @@ public class AndroidDetector extends RemoteUserEquipment {
 
 		// The socket for the connection with the Android device.
 		Socket clientSocket = null;
-		
+
 		// The message that was received from the Android device.
 		IMessage remoteMsg = null;
 
 		RemoteMessageTransmitter remoteMessageTransmitter = new RemoteMessageTransmitter();
-		
+
 		try {
 			serverSocket = new ServerSocket(getPortNumber());
 
@@ -116,65 +116,88 @@ public class AndroidDetector extends RemoteUserEquipment {
 
 				try {
 
-					// sets the timeout how long the serverSocket.accepts () waits for a client.
+					// sets the timeout how long the serverSocket.accepts ()
+					// waits for a client.
 					serverSocket.setSoTimeout(timeout);
 
-					// waits for an incoming connection request from an Android device.
+					// waits for an incoming connection request from an Android
+					// device.
 					clientSocket = serverSocket.accept();
 
 					System.out.println("Server has found a telephone!");
 
-					// Initialize a ObjectInputStread. It blocks until ObjectOutputStream on the Android device flush it.
-					remoteMessageTransmitter.setInputStream(clientSocket.getInputStream());
+					// Initialize a ObjectInputStread. It blocks until
+					// ObjectOutputStream on the Android device flush it.
+					remoteMessageTransmitter.setInputStream(clientSocket
+							.getInputStream());
 
+					// Fetch the message form the Android device or null if
+					// there was no message after a timeout or an exception was
+					// thrown.
+					remoteMsg = remoteMessageTransmitter.receiveMessage(
+							clientSocket, readTimeout);
 
-					// Fetch the message form the Android device or null if there was no message after a timeout or an exception was thrown.
-					remoteMsg = remoteMessageTransmitter.receiveMessage(clientSocket, readTimeout);		
+					System.out
+							.println("Server has received a message from the Android");
 
-					System.out.println("Server has received a message from the Android");
-
-					// check if the message was send. If there was an exception or timeout, then remoteMsg must be null.
+					// check if the message was send. If there was an exception
+					// or timeout, then remoteMsg must be null.
 					if (remoteMsg != null && remoteMsg instanceof ExposeMessage) {
-				
+
 						// check if it is a Expose message
 
-						System.out.println("Server has received a Expose message");
+						System.out
+								.println("Server has received a Expose message");
 
 						// Store the Android device info in the list.
-						StoreDeviceInfo(((ExposeMessage) remoteMsg).getImei(),
+						storeDeviceInfo(((ExposeMessage) remoteMsg).getImei(),
 								((ExposeMessage) remoteMsg).getNumber(),
-								clientSocket.getInetAddress()
-								.toString());
-						
+								clientSocket.getInetAddress().toString());
+
 						// Initialize the ObjectOutputStream.
-						remoteMessageTransmitter.setOutputStream(clientSocket.getOutputStream());
+						remoteMessageTransmitter.setOutputStream(clientSocket
+								.getOutputStream());
 
-						// Send the ChangeState (STOP_EXPOSE) message to the android device.
-						remoteMessageTransmitter.sendMessage(new ChangeStateMessage(AndroidEvents.STOP_EXPOSE));
+						// Send the ChangeState (STOP_EXPOSE) message to the
+						// android device.
+						remoteMessageTransmitter
+								.sendMessage(new ChangeStateMessage(
+										AndroidEvents.STOP_EXPOSE));
 
-						System.out.println ("Server has send a ChangeState message");
-					
-						// receive an Acknowledge message from the Android device, so that the server
-						// knows that the android device closed the connection first!!
-						remoteMsg = remoteMessageTransmitter.receiveMessage(clientSocket, readTimeout);
+						System.out
+								.println("Server has send a ChangeState message");
 
-						if (remoteMsg != null && remoteMsg instanceof AcknowledgeMessage) {
-							System.out.println("Server has received a Acknowledge message from the Android");
-							// close the Inputstream, OutputStream and the clientSocket.
+						// receive an Acknowledge message from the Android
+						// device, so that the server
+						// knows that the android device closed the connection
+						// first!!
+						remoteMsg = remoteMessageTransmitter.receiveMessage(
+								clientSocket, readTimeout);
+
+						if (remoteMsg != null
+								&& remoteMsg instanceof AcknowledgeMessage) {
+							System.out
+									.println("Server has received a Acknowledge message from the Android");
+							// close the Inputstream, OutputStream and the
+							// clientSocket.
 							remoteMessageTransmitter.closeInputStream();
 							remoteMessageTransmitter.closeOutputStream();
 							if (!clientSocket.isClosed()) {
 								clientSocket.close();
-							}		
+							}
 						} else {
-							System.out.println ("Error: NO acknowledge message received.");
+							System.out
+									.println("Error: NO acknowledge message received.");
 							// no valid Acknowledge message received.
 							remoteMessageTransmitter.closeInputStream();
 							remoteMessageTransmitter.closeOutputStream();
-							
-							// because there was no Acknowledge message from the Android device, it is not sure that
-							// the Android first stopped the connection. So it is possible that the server comes in a
-							// TIME_WAIT state what can takes seconds/minutes before the server can go on.
+
+							// because there was no Acknowledge message from the
+							// Android device, it is not sure that
+							// the Android first stopped the connection. So it
+							// is possible that the server comes in a
+							// TIME_WAIT state what can takes seconds/minutes
+							// before the server can go on.
 							if (!clientSocket.isClosed()) {
 								clientSocket.close();
 							}
@@ -182,15 +205,18 @@ public class AndroidDetector extends RemoteUserEquipment {
 						}
 
 					} else {
-						// Wrong message send by the Android device.It must be an ExposeMessage.
-						System.out.println ("Error: Android device must send a Expose message");
-						
+						// Wrong message send by the Android device.It must be
+						// an ExposeMessage.
+						System.out
+								.println("Error: Android device must send a Expose message");
+
 						/**
-						* because the Android device don't send am Expose message, it is not clear
-						* in which state the Android is. So we can't send any other messages to them.
-						* Just close the connection with that device and go on.
-						**/
-						
+						 * because the Android device don't send am Expose
+						 * message, it is not clear in which state the Android
+						 * is. So we can't send any other messages to them. Just
+						 * close the connection with that device and go on.
+						 **/
+
 						// Close the inputstream
 						remoteMessageTransmitter.closeInputStream();
 
@@ -198,55 +224,54 @@ public class AndroidDetector extends RemoteUserEquipment {
 						if (!clientSocket.isClosed()) {
 							clientSocket.close();
 						}
-						System.out.println ("Connection to the Android device is closed (no referenc is stored).");
+						System.out
+								.println("Connection to the Android device is closed (no referenc is stored).");
 					}
-				
+
 				} catch (SocketException e) {
 					// Error in the underlying protocol (TCP for example)
 					// Throws by setSoTimeOut.
 
-					// try to close the InputStream, OutputStream and the clientSocket.
+					// try to close the InputStream, OutputStream and the
+					// clientSocket.
 					remoteMessageTransmitter.closeInputStream();
 					remoteMessageTransmitter.closeOutputStream();
 					if (!clientSocket.isClosed()) {
 						clientSocket.close();
 					}
 					e.printStackTrace();
-					
+
 				} catch (SocketTimeoutException e) {
 					// A timeout for the blocking method: accept() occurred.
 					// Throws by setSoTimeOut.
-					
+
 				} catch (IOException e) {
-					// IO error occurred while waiting for an socket connection. 
+					// IO error occurred while waiting for an socket connection.
 					// IO error occurred when closing the clientSocket.
-					// Throws by ServerSocket.accept() and clientsocket.close().	
+					// Throws by ServerSocket.accept() and clientsocket.close().
 					e.printStackTrace();
 				}
 
 			} // while
-			
-		
+
 		} catch (IOException e) {
 			// IO error while opening the Server socket.
 			// Throws by new ServerSocket (..).
-			
+
 			e.printStackTrace();
-			
+
 		} catch (IllegalArgumentException e) {
 			// The port number is out of range (0 - 65535)
 			// Throws by new ServerSocket (..).
 			e.printStackTrace();
+		} finally {
+			closeServerConnection();
+			stateCallBack.ending();
 		}
-		finally {		
-				closeServerConnection();
-				// TODO: ending must be removed i think. 
-//				stateCallBack.ending();
-			}
-		
-	}   // run ()
 
-	/** 
+	} // run ()
+
+	/**
 	 * Stores the android device information in the list.
 	 * 
 	 * @version
@@ -257,8 +282,9 @@ public class AndroidDetector extends RemoteUserEquipment {
 	 * @param number
 	 * @param ipAddress
 	 */
-	public synchronized void StoreDeviceInfo (String imei, String number, String ipAddress) {
-	
+	public synchronized void storeDeviceInfo(String imei, String number,
+			String ipAddress) {
+
 		// Creates a new UEInfo object from the Android device data.
 		UEInfo clientUeInfo = new UEInfo(imei, "", number);
 		clientUeInfo.setIPAddress(ipAddress);
@@ -267,9 +293,9 @@ public class AndroidDetector extends RemoteUserEquipment {
 		List<UEInfo> ueList = detectResult.getValidUEList();
 
 		int i = 0;
-		for (; i != ueList.size()
-				&& !ueList.get(i).getImei().equals(imei); i++) {
-			// search for a UEInfo object with the same IMEI number as the Android client.
+		for (; i != ueList.size() && !ueList.get(i).getImei().equals(imei); i++) {
+			// search for a UEInfo object with the same IMEI number as the
+			// Android client.
 		}
 
 		if (i == ueList.size()) {
@@ -280,8 +306,7 @@ public class AndroidDetector extends RemoteUserEquipment {
 			ueList.set(i, clientUeInfo);
 		}
 	}
-	
-	
+
 	/**
 	 * This method starts a new thread where the server is listening to new
 	 * Android devices (UE's)
@@ -290,9 +315,9 @@ public class AndroidDetector extends RemoteUserEquipment {
 	 * @author Koen Nijmeijer
 	 */
 	public synchronized void startThread(IStateCallBack stateCallBack) {
-		
+
 		this.stateCallBack = stateCallBack;
-		
+
 		// if there is another thread running, don't create a new thread
 		if (androidThread == null) {
 			androidThread = new Thread(this, threadName);
@@ -308,21 +333,18 @@ public class AndroidDetector extends RemoteUserEquipment {
 	public synchronized void stopThread() {
 
 		stopThread = true;
-		
 
 		System.out.println("Stopping detecting mode....");
 
-// TODO: This must work somehow! Know it blocks.. 		
-/*		try {
-			androidThread.join();
-		} catch (InterruptedException e) {
- 			e.printStackTrace();
-		}
-*/
-		
+		// TODO: This must work somehow! Know it blocks..
+		/*
+		 * try { androidThread.join(); } catch (InterruptedException e) {
+		 * e.printStackTrace(); }
+		 */
+
 		do {
 			try {
-				
+
 				this.wait(1000);
 
 			} catch (InterruptedException e) {
@@ -331,8 +353,6 @@ public class AndroidDetector extends RemoteUserEquipment {
 			// wait until the thread is totally stopped.
 		} while (androidThread.isAlive());
 
-
-		
 		// safe? after stopThread = true, the thread is not directly stopped!!
 		androidThread = null;
 	}
@@ -341,6 +361,7 @@ public class AndroidDetector extends RemoteUserEquipment {
 	 * Close the Server connection if it is still open.
 	 * <p>
 	 * Only accessible by this class only (private).
+	 * 
 	 * @version
 	 * @author Koen Nijmeijer
 	 */
@@ -366,9 +387,11 @@ public class AndroidDetector extends RemoteUserEquipment {
 
 	/**
 	 * Sets the callback method that is called when the tread is going to end.
+	 * 
 	 * @version
 	 * @author Koen Nijmeijer
-	 * @param callBack the method to execute when the thread is going to stop.
+	 * @param callBack
+	 *            the method to execute when the thread is going to stop.
 	 */
 	public void setCallBack(ICallBackClient callBack) {
 		this.callBack = callBack;
@@ -376,6 +399,7 @@ public class AndroidDetector extends RemoteUserEquipment {
 
 	/**
 	 * Overrides the toString method.
+	 * 
 	 * @version
 	 * @author Koen Nijmeijer
 	 */

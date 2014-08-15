@@ -22,14 +22,14 @@ import com.koen.tca.server.state.ServerStateDetect;
 import com.koen.tca.server.state.ServerStateIdle;
 import com.koen.tca.server.state.ServerStateReady;
 import com.koen.tca.server.state.ServerStateTest;
+import com.koen.tca.server.thread.AndroidDetector;
 import com.netxforge.netxtest.DragonXRuntimeModule;
 
 /**
  * OSGI Activator class that starts and stops the <code>TCAServer</code> class.
  * <p>
- * This activator class implements the <code>bundleActivator</code> interface
- * It also implements the <code>CommandProvider</code> interface 
- * <br>
+ * This activator class implements the <code>bundleActivator</code> interface It
+ * also implements the <code>CommandProvider</code> interface <br>
  * 
  * @version
  * @author Koen Nijmeijer, Christophe Bouhier
@@ -60,9 +60,9 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 	/**
 	 * Starts the Server bundle through the <code>TCAServer</code> class.
 	 * <p>
-	 * This method is the starting point of the server application. Every module that
-	 *  runs under Equinox - OSGI framework must have this method. It is override from 
-	 *  the <code>BundleActivator</code> interface.
+	 * This method is the starting point of the server application. Every module
+	 * that runs under Equinox - OSGI framework must have this method. It is
+	 * override from the <code>BundleActivator</code> interface.
 	 * 
 	 * @version
 	 * @author Koen Nijmeijer, Christophe Bouhier
@@ -87,8 +87,9 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 	/**
 	 * Stops the Server bundle.
 	 * <p>
-	 * This method stops the server application module under the equinox - OSGI framework.
-	 * Every OSGI equinox Module must have a stop method to close all resources nicely.
+	 * This method stops the server application module under the equinox - OSGI
+	 * framework. Every OSGI equinox Module must have a stop method to close all
+	 * resources nicely.
 	 * 
 	 * @version
 	 * @author Koen Nijmeijer, Christophe Bouhier
@@ -100,14 +101,15 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 
 		// Stops the TCAServer object
 		server.stop();
-		
+
 		// Clears the instance of itself.
 		INSTANCE = null;
 	}
 
 	/**
 	 * Returns the instance of this object
-	 * <p> 
+	 * <p>
+	 * 
 	 * @version
 	 * @author Christophe Bouhier
 	 * @return the instance of this object (this).
@@ -207,10 +209,12 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 	}
 
 	/**
-	 * Specifies the shell commands that can be used on the OSGI console to control the Server.
-	 * <p> 
-	 * All methods that begin with '_' and has a CommandInterpreter arguments, are used by OSGI to
-	 * add new commands for the console. 
+	 * Specifies the shell commands that can be used on the OSGI console to
+	 * control the Server.
+	 * <p>
+	 * All methods that begin with '_' and has a CommandInterpreter arguments,
+	 * are used by OSGI to add new commands for the console.
+	 * 
 	 * @version
 	 * @author Christophe Bouhier, Koen Nijmeijer
 	 * @param intp
@@ -219,25 +223,26 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 	public Object _tca(CommandInterpreter intp) {
 
 		// The event that was fired.
+		@SuppressWarnings("unused")
 		ServerEvents fireEvent = null;
-		
+
 		// gets the present state of the server.
-		IServerState state = this.server.getTestServer ()
-				.getStateMachine ().getState ();
+		IServerState state = this.server.getTestServer().getStateMachine()
+				.getState();
 
 		// The message to be send to the user.
 		String message = "Wrong or no arguments!\n" + getHelp();
-		
+
 		// Other arguments on the command line.
 		String nextArgument2 = null;
 		String nextArgument3 = null;
-		
+
 		// get the next command line argument after 'tca'..
 		String nextArgument = intp.nextArgument();
-		
+
 		// There must be an argument after 'tca' on the command line
 		if (nextArgument != null) {
-			
+
 			// this command line argument can be used in all the server states.
 			if (nextArgument.equals("state")) {
 
@@ -246,16 +251,18 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 				if (nextArgument2 != null) {
 					if (nextArgument2.equals("details")) {
 
-						// check is there is no other argument on the command line.
+						// check is there is no other argument on the command
+						// line.
 						nextArgument3 = intp.nextArgument();
 						if (nextArgument3 == null) {
-							message = "\n Details:\n-------------\n" + state.details();
+							message = "\n Details:\n-------------\n"
+									+ state.details();
 						}
 					}
 				} else {
-					message = "The current server state is: " + state;					
+					message = "The current server state is: " + state;
 				}
-				
+
 			} else if (nextArgument.equals("upload")) {
 				nextArgument2 = intp.nextArgument();
 				if (nextArgument2 != null) {
@@ -267,32 +274,33 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 				nextArgument2 = intp.nextArgument();
 				// check if there is no other argument on the command line.
 				if (nextArgument2 == null) {
-					message = "TODO: result";					
+					message = "TODO: result";
 				}
 			} else if (nextArgument.equals("event")) {
 				nextArgument2 = intp.nextArgument();
 				if (nextArgument2 != null) {
 					message = eventArgument(state, nextArgument2);
-				} 
-			} 
+				}
+			}
 		}
-		return message;			
+		return message;
 	}
 
-	private String eventArgument (IServerState state, String argument) {
+	private String eventArgument(IServerState state, String argument) {
 
 		String message = "fire event: ";
 		if (argument != null) {
 			if (argument.equals("idle") && (state instanceof ServerStateReady)) {
 				// change server state to idle
 				try {
-				server.getTestServer().idle();
-				message += ServerEvents.IDLE;				
+					server.getTestServer().idle();
+					message += ServerEvents.IDLE;
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
 
-			} else if (argument.equals("start_detect") && (state instanceof ServerStateIdle || state instanceof ServerStateReady)) {
+			} else if (argument.equals("start_detect")
+					&& (state instanceof ServerStateIdle || state instanceof ServerStateReady)) {
 				// change server state to detect
 				try {
 					server.getTestServer().startDetect(null);
@@ -300,31 +308,50 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
-				
-			} else if (argument.equals("stop_detect") && state instanceof ServerStateDetect) {
-				// change server state to Ready or Idle, depends on the founded Android device.
+
+			} else if (argument.equals("stop_detect")
+					&& state instanceof ServerStateDetect) {
+				// change server state to Ready or Idle, depends on the founded
+				// Android device.
 				try {
 					server.getTestServer().stopDetect(null);
 					message += ServerEvents.STOP_DETECT;
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
-			} else if (argument.equals("start_test") && state instanceof ServerStateReady) {
+			} else if (argument.equals("start_test")
+					&& state instanceof ServerStateReady) {
 				try {
 					server.getTestServer().startTestSet(null, "");
 					message += ServerEvents.START_TEST;
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
-			} else if (argument.equals("stop_test") && state instanceof ServerStateTest) {
+			} else if (argument.equals("stop_test")
+					&& state instanceof ServerStateTest) {
 				try {
 					server.getTestServer().stopTest(null);
 					message += ServerEvents.STOP_TEST;
 				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
+			} else if (argument.equals("fake_ue")
+					&& state instanceof ServerStateDetect) {
+
+				IServerState currentState = server.getTestServer()
+						.getStateMachine().getState();
+				ServerStateDetect stateDetect = (ServerStateDetect) currentState;
+				AndroidDetector androidDetector = stateDetect
+						.getAndroidDetector();
+				androidDetector.storeDeviceInfo("1234567", "061234567",
+						"10.10.100.253");
+				androidDetector.storeDeviceInfo("2345678", "062345678",
+						"10.10.100.254");
+
+				message += "Fakin UE detection";
 			} else {
-				message = "Wrong event or wrong state for that event!\n" + getHelp();
+				message = "Wrong event or wrong state for that event!\n"
+						+ getHelp();
 			}
 		} else {
 			// empty argument
@@ -332,7 +359,7 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 		}
 		return message;
 	}
-	
+
 	/**
 	 * return a string that explain the OSGI shell commands.
 	 * <p>
@@ -352,6 +379,7 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 				+ "\n           - event start_detect"
 				+ "\n      In Detect state:"
 				+ "\n           - event stop_detect"
+				+ "\n           - event fake_ue => Fake the discovery of UE's with dummy values"
 				+ "\n      In Ready state:"
 				+ "\n           - event start_detect"
 				+ "\n           - event start_test"
@@ -362,6 +390,9 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 				+ "\n           -event stop_test"
 				+ "\n      in any state:"
 				+ "\n       state [details] Optionally ask for details of the current state"
-				+ "\n     - [TODO]View various TCA Server objects";
+				+ "\n     - [TODO]View various TCA Server objects"
+				+ "\n"
+		        + "\n     Configuration:"
+				+ "\n           - config script_path [path to folder with dragon X scripts]";
 	}
 }

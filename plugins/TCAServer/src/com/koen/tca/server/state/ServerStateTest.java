@@ -8,8 +8,8 @@ public class ServerStateTest extends AbstractServerState {
 	/**
 	 * Invoker for the script files. Start the script and gets the actions
 	 */
-	//@Inject
-	private DragonXInvoker dragonXInvoker = new DragonXInvoker();
+	@Inject
+	private DragonXInvoker dragonXInvoker;
 
 	public ServerStateTest() {
 

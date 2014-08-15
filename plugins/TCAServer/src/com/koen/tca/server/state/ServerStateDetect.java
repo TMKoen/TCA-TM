@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import com.koen.tca.server.thread.AndroidDetector;
 
-
 /**
  * class that represents the state 'Detect'. It inherent the abstract class
  * <code>AbstractServerState</code> which in turn inherent from the interface
@@ -20,7 +19,7 @@ public class ServerStateDetect extends AbstractServerState {
 	final String threadName = "Detect Thread";
 
 	public ServerStateDetect() {
- 
+
 		try {
 			androidDetector = new AndroidDetector(8888);
 			androidDetector.setDetectResult(DetectResult.SINGLETON());
@@ -32,28 +31,30 @@ public class ServerStateDetect extends AbstractServerState {
 
 	@Override
 	public IServerState changeState(ServerEvents serverEvent) {
-		
+
 		IServerState state = this;
-		
+
 		switch (serverEvent) {
 		case STOP_DETECT:
 
 			androidDetector.stopThread();
 
-			// Release this resource.. Maybe unnecessary, because when changing States, 
+			// Release this resource.. Maybe unnecessary, because when changing
+			// States,
 			// the old state (this state) is also released.
-			androidDetector = null; 
+			androidDetector = null;
 
 			// server goes to the wait state. UE's are present.
-			state = new ServerStateReady ();
+			state = getContext().createState(STATES.READY);
 			break;
 		case STOP_DETECT_NO_UE:
 
 			androidDetector.stopThread();
-			
-			// Garbage collected.. Server goes to the 'Idle' state. No UE's are present.
-			androidDetector = null; 
-			state = new ServerStateIdle ();
+
+			// Garbage collected.. Server goes to the 'Idle' state. No UE's are
+			// present.
+			androidDetector = null;
+			state = getContext().createState(STATES.IDLE);
 		default:
 			// the other serverEvents are not valid in the 'Connect' state
 			break;
@@ -79,14 +80,20 @@ public class ServerStateDetect extends AbstractServerState {
 
 	@Override
 	public void ending() {
+
 		// fired by Android Thread being completed, like a Socket timeout etc...
-		// Go back to ready mode.
-		ServerStateReady serverStateReady = new ServerStateReady();
+		// Go back to idle mode.
+		IServerState serverStateReady = this.getContext().createState(
+				STATES.IDLE);
 		getContext().setState(serverStateReady);
 		serverStateReady.activateState(getContext());
 
 		// Notify upstream we are ending.
 		super.ending();
+	}
+
+	public AndroidDetector getAndroidDetector() {
+		return androidDetector;
 	}
 
 }

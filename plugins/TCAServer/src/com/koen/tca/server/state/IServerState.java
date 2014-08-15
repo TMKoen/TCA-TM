@@ -1,6 +1,5 @@
 package com.koen.tca.server.state;
 
-
 /**
  * Interface for the server States: Idle, Detect, Ready and Test.
  * The abstract class <code>AbstractServerState</code> implements this interface.
@@ -25,6 +24,16 @@ package com.koen.tca.server.state;
 public interface IServerState {
 
 	/**
+	 * The various existing states, used by the {@link ServerStateMachine} to
+	 * instantiate state objects.
+	 * 
+	 * @author Christophe Bouhier
+	 */
+	public enum STATES {
+		IDLE, DETECT, READY, TEST
+	};
+
+	/**
 	 * Change the state of the object <code>ServerStateMachine</code>. the state
 	 * changes, depends of the event that occurs and the present state of the
 	 * <code>ServerStateMachine</code>.
@@ -32,9 +41,10 @@ public interface IServerState {
 	 * <p>
 	 * The possible states are: Idle, Detect, Ready and Test.
 	 * 
-	 * @param serverEvent represents the event that occurs
-	 * @return the new IServerState instance or the old instance if the ServerEvent 
-	 * don't match the present state.
+	 * @param serverEvent
+	 *            represents the event that occurs
+	 * @return the new IServerState instance or the old instance if the
+	 *         ServerEvent don't match the present state.
 	 * @see ServerEvents
 	 */
 	public IServerState changeState(ServerEvents serverEvent);

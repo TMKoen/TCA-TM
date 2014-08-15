@@ -19,7 +19,8 @@ import com.koen.tca.server.state.ServerStateMachine;
  * 'TestServer' is the main class that handles all the necessary actions The RMI
  * methods are used by the client to communicate with the server.
  * 
- * TODO, separate the state machine, so states can be controlled in non RMI mode. (I.e. by command line). 
+ * TODO, separate the state machine, so states can be controlled in non RMI
+ * mode. (I.e. by command line).
  * 
  * @author Koen Nijmeijer
  * 
@@ -35,15 +36,16 @@ public class TestServer extends java.rmi.server.UnicastRemoteObject implements
 	 */
 	private static final long serialVersionUID = 1L;
 
-	 // Handles all the States for the server.
+	// Handles all the States for the server.
 	@Inject
 	private ServerStateMachine stateMachine;
 
 	// The IP address of the server.
+	@SuppressWarnings("unused")
 	private String serverAdres;
-	
+
 	// The default RMI server port to communicate with the client.
-	private final int serverPort = 1099; 
+	private final int serverPort = 1099;
 
 	/**
 	 * RMI registry variables
@@ -57,18 +59,22 @@ public class TestServer extends java.rmi.server.UnicastRemoteObject implements
 		try {
 
 			// This gets the default IP address
-			//			serverAdres = InetAddress.getLocalHost().toString();
-			// System.out.println(serverAdres);		
-			
-			Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
-			
-			for (NetworkInterface networkInterface: Collections.list(networkInterfaces)) {
-		
+			// serverAdres = InetAddress.getLocalHost().toString();
+			// System.out.println(serverAdres);
+
+			Enumeration<NetworkInterface> networkInterfaces = NetworkInterface
+					.getNetworkInterfaces();
+
+			for (NetworkInterface networkInterface : Collections
+					.list(networkInterfaces)) {
+
 				if (networkInterface.getInetAddresses().hasMoreElements() == true) {
-					System.out.println ("Display name: " + networkInterface.getDisplayName());
-					System.out.println ("Name: " + networkInterface.getName());
-					
-					Enumeration<InetAddress> inetAddress = networkInterface.getInetAddresses(); 
+					System.out.println("Display name: "
+							+ networkInterface.getDisplayName());
+					System.out.println("Name: " + networkInterface.getName());
+
+					Enumeration<InetAddress> inetAddress = networkInterface
+							.getInetAddresses();
 					for (InetAddress address : Collections.list(inetAddress)) {
 						if (address != null) {
 							System.out.println("IP: " + address);
@@ -76,7 +82,6 @@ public class TestServer extends java.rmi.server.UnicastRemoteObject implements
 					}
 				}
 			}
-			
 
 		} catch (Exception e) {
 			throw new RemoteException("No valid Server-IP adres!");
@@ -148,7 +153,7 @@ public class TestServer extends java.rmi.server.UnicastRemoteObject implements
 	public synchronized void startTestCase(ICallBackClient callBackClient,
 			String testCase) throws RemoteException {
 		stateMachine.changeState(ServerEvents.START_TEST);
-		
+
 		// stateMachine.activateState();
 		System.out.println("Starting test");
 
@@ -181,7 +186,7 @@ public class TestServer extends java.rmi.server.UnicastRemoteObject implements
 
 	@Override
 	public synchronized void getServerStatus() throws RemoteException {
-			// TODO Auto-generated method stub
+		// TODO Auto-generated method stub
 	}
 
 	public ServerStateMachine getStateMachine() {
@@ -189,18 +194,18 @@ public class TestServer extends java.rmi.server.UnicastRemoteObject implements
 	}
 
 	/**
-	 * change the Ready state to Idle. Other states can't go back to the Idle state via this method.
+	 * change the Ready state to Idle. Other states can't go back to the Idle
+	 * state via this method.
 	 */
 	@Override
 	public synchronized void idle() throws RemoteException {
 		// get the list with known Android devices.
 		DetectResult detectResult = DetectResult.SINGLETON();
-		
+
 		stateMachine.changeState(ServerEvents.IDLE);
 		if (stateMachine.getState() instanceof ServerStateIdle) {
 			// clear the list.
 			detectResult.getValidUEList().clear();
 		}
 	}
-
-} // class TestServer
+}
