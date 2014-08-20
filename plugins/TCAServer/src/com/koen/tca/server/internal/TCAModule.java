@@ -2,7 +2,7 @@ package com.koen.tca.server.internal;
 
 import com.google.inject.Binder;
 import com.google.inject.Module;
-import com.koen.tca.server.AndroidDispatcher;
+import com.koen.tca.server.AbstractDispatcher;
 import com.koen.tca.server.DragonXInvoker;
 import com.koen.tca.server.FolderPollingService;
 import com.koen.tca.server.IRemoteServer;
@@ -60,7 +60,7 @@ public class TCAModule implements Module {
 		/**
 		 * A service which can dispatch DragonX Action's.
 		 */
-		binder.bind(IExternalDispatcher.class).to(AndroidDispatcher.class);
+		binder.bind(IExternalDispatcher.class).to(AbstractDispatcher.DEFAULT.class);
 
 	}
 }

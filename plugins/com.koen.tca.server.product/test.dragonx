@@ -1,0 +1,22 @@
+// A Mobile originating call test script
+
+UE{ 
+	Name: UE1
+	MSISDN:31612962997
+}
+
+
+TestCase  {
+	MobileOriginatingCall
+	Description:"This tests makes a mobile originating call and from one UE to another UE"
+	
+	Test{
+		CALL {
+					 
+		AnswerTime : 600 // Seconds
+		 	
+		}
+	}
+
+} 
+

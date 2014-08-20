@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
 import org.eclipse.xtext.util.Modules2;
@@ -74,6 +75,21 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 
 		// save instance handler of itself
 		INSTANCE = this;
+
+		// Make sure, we register the extension, which normally only comes
+		// through the UI plugin.xml
+		org.eclipse.xtext.resource.IResourceFactory resourceFactory = this
+				.getInjector().getInstance(
+						org.eclipse.xtext.resource.IResourceFactory.class);
+		Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap().put(
+				"dragonx", resourceFactory);
+
+		if (!Resource.Factory.Registry.INSTANCE.getExtensionToFactoryMap()
+				.containsKey("xtextbin"))
+			Resource.Factory.Registry.INSTANCE
+					.getExtensionToFactoryMap()
+					.put("xtextbin",
+							new org.eclipse.xtext.resource.impl.BinaryGrammarResourceFactoryImpl());
 
 		// We contribute OSGI commands here.
 		context.registerService(CommandProvider.class.getName(), this, null);
@@ -392,7 +408,7 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 				+ "\n       state [details] Optionally ask for details of the current state"
 				+ "\n     - [TODO]View various TCA Server objects"
 				+ "\n"
-		        + "\n     Configuration:"
+				+ "\n     Configuration:"
 				+ "\n           - config script_path [path to folder with dragon X scripts]";
 	}
 }
