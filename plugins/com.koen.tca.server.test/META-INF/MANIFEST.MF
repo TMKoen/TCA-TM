@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Test
+Bundle-SymbolicName: com.koen.tca.server.test
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: com.koen.tca.server.test.Activator
+Bundle-Vendor: KOEN
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.junit,
+ com.netxforge.netxtest;bundle-version="1.0.0",
+ com.koen.tca.server;bundle-version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
