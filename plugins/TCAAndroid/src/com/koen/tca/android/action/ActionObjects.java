@@ -10,6 +10,6 @@ package com.koen.tca.android.action;
  * @author Koen
  *
  */
-public enum ActionObjects { ActionCall
+public enum ActionObjects { ActionCALL
 
 }

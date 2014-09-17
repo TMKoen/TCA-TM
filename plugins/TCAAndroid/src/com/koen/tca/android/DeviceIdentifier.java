@@ -170,7 +170,7 @@ public class DeviceIdentifier {
 	 * @param ipaddr
 	 * @return true if its valid, otherwise false.
 	 */
-	public boolean isValidIpAddress (String ipaddr) {
+	public boolean isValidIpAddress (String ipAddress) {
 		// TODO: Check IP-address for 3x '.' and numbers between 0 and 255
 		return true;
 	}

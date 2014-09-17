@@ -1,46 +1,40 @@
 package com.koen.tca.android.state.thread;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-
 import com.koen.tca.android.ActionRunner;
-import com.koen.tca.android.DeviceIdentifier;
 import com.koen.tca.common.message.AndroidEvents;
-import com.koen.tca.common.message.IMessage;
-import com.koen.tca.common.message.ChangeStateMessage;
-import com.koen.tca.common.message.RemoteMessageTransmitter;
-
 import android.os.Handler;
 import android.os.Message;
 
+/**
+ * The Thread for the test state. When the Test state is running, the Server can't communicate with the Android.
+ * After the Test state is finished, the Android goes back to the Ready state where the server can communicate with.
+ * @version 1.0
+ * @author Koen Nijmeijer
+ *
+ */
 public class ThreadTest implements IThreadState {
 
+	// The thread handler and its name
 	private Thread threadTest;
 	private final String threadName = "Test";
-	private Socket clientSocket;
+
+	// Handler to the UI for the call back message.
 	private Handler mainHandler;
 	
-	private ServerSocket androidServerSocket;
-	private final int timeout = 1000*60;
-	
-	// timeout for reading a message from the server.
-	private final int readTimeout = 1000*30;
-	
-	private ThreadStartAction threadStartAction;
-	
-	// if this boolean is set to true, then the thread is stopping
-	private boolean stopThread;
 	
 	public ThreadTest () {
 		threadTest = null;
-		clientSocket = null;
 		mainHandler = null;
-		setStopThread (true);
-		threadStartAction = null;
 	}
 	
-	public synchronized void startThread (Handler mainActivityHandler) {
+	/**
+	 * Starts the thread.
+	 * @version 1.0
+	 * @author Koen Nijmeijer
+	 * @param mainActiviyHandler the Handler to the main UI thread for call back
+	 */
+	@Override
+	public void startThread (Handler mainActivityHandler) {
 		if (threadTest == null) {
 			mainHandler = mainActivityHandler;
 			threadTest = new Thread (this, threadName);
@@ -49,96 +43,35 @@ public class ThreadTest implements IThreadState {
 	}
 
 	@Override
+	public void stopThread() {
+		// the thread stops automatically if the Action is finished.
+	}
+	
+	@Override
 	public void run() {
 
-		String messageType;
-		IMessage remoteMsg = null;
 		AndroidEvents event;
 		
 		// Gets the singleton object that holds the action to be run.
 		ActionRunner actionRunner = ActionRunner.SINGLETON();
 		
-		// Gets the singleton object that holds the server IP address and port number
-		DeviceIdentifier device = DeviceIdentifier.SINGLETON();
-		
-		// Create an object which can handle messages (sending/receiving) to and from the Server.
-		RemoteMessageTransmitter messageTransmitter = new RemoteMessageTransmitter ();
-		
-
 		// check if there is an action object stored in the actionRunner
 		if (actionRunner.getAction() != null) {
-			
-			// Start the Action in a separate thread.
-			threadStartAction = new ThreadStartAction ();
-			threadStartAction.startThread(mainHandler);
+	
+			// Start the test
+			actionRunner.startTest();
 		}
-		
-		if (device.getServerIpAddress()!= null && device.getSocketPortNumber() != 0) {
 
-			try {
-				androidServerSocket = new ServerSocket (device.getSocketPortNumber());	
-
-				// Set the timeout how long the server socket accept () method must hold.
-				androidServerSocket.setSoTimeout(timeout);
-
-				while (stopThread != true) {
-
-					// waits for a command from the Server or a timeout occurs.
-					Socket clientSocket = androidServerSocket.accept();
-
-					// TODO: init ObjectInput/Output stream
-					remoteMsg = messageTransmitter.receiveMessage(clientSocket, readTimeout);
-					if (remoteMsg != null) {
-				
-						// Gets the type of the message in a string value
-						messageType = remoteMsg.toString();
-				
-						if (messageType.equals("ChangeState_Message")) {
-
-							// gets the event from the received message
-							event = ((ChangeStateMessage)remoteMsg).getEvent();
-		 				
-							// sends the event to the main thread (UI thread).
-							Message msg = mainHandler.obtainMessage();
-							msg.obj = event;
-							mainHandler.sendMessage (msg);
-					
-							// go out the thread
-							// TODO: stop the ThreadStartAction thread somehow.
-							setStopThread (true);
-						}
-				
-					}	
-			
-				} // while
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-				// go out this run() method.
-				return;
-			} finally {
-				if (androidServerSocket != null) {
-					try {
-						// Close the socket.
-						androidServerSocket.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}	// if
-		
-	}
-
-	@Override
-	public void stopThread() {
-		threadStartAction = null;
+		// Event to stop the Test state and goes back to the Ready state.
+		event = AndroidEvents.FINISHED;
+	
+		// sends the event to the main thread (UI thread).
+		Message msg = mainHandler.obtainMessage();
+		msg.obj = event;
+		mainHandler.sendMessage (msg);
 		
 	}
 	
-	private synchronized void setStopThread (boolean stopThread) {
-		this.stopThread = stopThread;
-	}
 }
 
 

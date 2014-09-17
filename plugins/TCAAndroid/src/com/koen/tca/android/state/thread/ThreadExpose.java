@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import com.koen.tca.android.DeviceIdentifier;
 import com.koen.tca.common.message.AcknowledgeMessage;
@@ -29,6 +30,55 @@ import com.koen.tca.common.message.RemoteMessageTransmitter;
  */
 public class ThreadExpose implements IThreadState {
 
+	/**
+	 * Default class for testing the Actions. There is no connection with the server.
+	 * @author Koen Nijmeijer
+	 *
+	 */
+	public class TestThreadExpose extends ThreadExpose {
+
+		public TestThreadExpose () {
+			super ();
+		}
+		
+		/**
+		 * Starts the Expose thread.
+		 * @version 1.0
+		 * @author Koen Nijmeijer
+		 * @param mainActivityHandler the Handler to call back
+		 */
+		@Override
+		public synchronized void startThread (Handler mainActivityHandler) {
+			if (threadExpose == null) {
+				mainHandler = mainActivityHandler;
+				threadExpose = new Thread (this, threadName);
+				threadExpose.start();
+			}
+		}
+		
+		@Override
+		public synchronized void stopThread () {
+			super.stopThread();
+		}
+		
+		@Override public void run () {
+			
+			// Simulate that the server finds the Android and sends a STOP_EXPOSE event.
+			AndroidEvents event = AndroidEvents.STOP_EXPOSE;
+	
+			// simulates a wait time that the server can responds.
+//			try {
+//				wait(2000*20);
+//			} catch (InterruptedException e) {
+//				Log.e("wait", "The wait for the simulation in ThreadExpose has a problem");
+//			}
+			// sends the event to the main thread (UI thread).
+			Message msg = mainHandler.obtainMessage();
+			msg.obj = event;
+			mainHandler.sendMessage (msg);
+		}
+	}
+	
 	private Thread threadExpose;
 	private final String threadName = "Expose";
 
@@ -70,7 +120,7 @@ public class ThreadExpose implements IThreadState {
 
 		IMessage changeStateMsg = null;
 		
-		// Initialize the default AndroidEvent if there is no even received from the server.
+		// Initialize the default AndroidEvent if there is no event received from the server.
 		AndroidEvents event = AndroidEvents.STOP_EXPOSE_NO_SERVER;
 		
 		// Create an object which can handle messages (sending/receiving) to and from the Server.
@@ -88,9 +138,6 @@ public class ThreadExpose implements IThreadState {
 				// connect to the server with a timeout interval if the server is not responding.
 				clientSocket.connect(serverAddress,socketTimeout);
 		
-// 				old method without timeout!!!				
-//				clientSocket = new Socket (device.getServerIpAddress(), device.getSocketPortNumber());
-	
 				// Sends a MessageExpose message to the Server.
 				// MessageExpose has the IMEI and telephone number to the Android device.
 				messageTransmitter.setOutputStream(clientSocket.getOutputStream());
@@ -123,17 +170,17 @@ public class ThreadExpose implements IThreadState {
 	 								
 			} catch (UnknownHostException e) {
 				// Timeout was occurred 
-
+				Log.e("Timeout", "the ThreadExpose has a timeout. No reaction from the server");
 				
-				e.printStackTrace();
 			} catch (IllegalArgumentException e) {
 				// No valid host address. Thrown by clientsocket.connect(..)
+				Log.e("clientSocket","The clientSocket connect has a invalid host address");
 
 			} catch (ConnectException e) {
-				e.printStackTrace();
+				Log.e("clientSocket","The clientSocket has a connection problem");
 				
 			} catch (IOException e) {
-				e.printStackTrace();
+				Log.e("clientSocket","Some other clientSocker problem has arrise");
 			} finally {
 				messageTransmitter.closeOutputStream();
 				messageTransmitter.closeInputStream();
@@ -143,7 +190,7 @@ public class ThreadExpose implements IThreadState {
 						clientSocket.close();			
 
 					} catch (IOException e) {
-						e.printStackTrace();
+						Log.e("clientsocket","the clientSocket can't be closed");
 					}
 					
 					// sends the event to the main thread (UI thread).

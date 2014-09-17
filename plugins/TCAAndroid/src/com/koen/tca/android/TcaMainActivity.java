@@ -1,16 +1,23 @@
 package com.koen.tca.android;
 
+import java.util.Date;
+
 import com.koen.tca.android.DeviceIdentifier;
+import com.koen.tca.android.state.AndroidStateIdle;
 import com.koen.tca.android.state.AndroidStateMachine;
+import com.koen.tca.android.state.AndroidStateReady;
 import com.koen.tca.android.state.AndroidStateTest;
 
 
+import com.koen.tca.android.state.IAndroidState;
 import com.koen.tca.common.message.AndroidEvents;
+import com.koen.tca.common.message.RemoteNetworkInfo;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -44,10 +51,13 @@ import android.widget.TextView;
  */
 public class TcaMainActivity extends Activity {
 
+	// Creates an object of ActionRunnner. It is a singleton, so there can be only one object of this class.
+	private ActionRunner actionRunner = ActionRunner.SINGLETON();
+	
 	// A reference to the singleton object which hold the device identification 
 	// information like IMEI and telephone number.
-	// It also holds the IP address of the Server and the port number to communicate to the Server.
-	private DeviceIdentifier deviceInfo;
+	// It also holds the IP address and the port number of the Server to communicate to the Server.
+	private DeviceIdentifier deviceInfo = DeviceIdentifier.SINGLETON();
 	
 	// Holds and manage the state of the Android device: Idle, Expose, Ready or Test.
 	private AndroidStateMachine androidState;
@@ -83,10 +93,7 @@ public class TcaMainActivity extends Activity {
 	// the handler to the UI Telephone number TextView
 	private TextView textView_Number;
 
-	// Creates an object of ActionRunnner. It is a singleton, so there can be only one object of this class.
-	// SuppressWarnings suppress the compiler to say that this variable is never used.
-	@SuppressWarnings("unused")
-	private ActionRunner actionRunner = ActionRunner.SINGLETON();
+
 	
 	/**
 	 * Initialize and starts the activity (user interface).
@@ -102,6 +109,9 @@ public class TcaMainActivity extends Activity {
 
 		// Initialize the window UI like buttons, textview, etc.		
 		setContentView(R.layout.activity_tca_main);
+
+		// Initialize the state machine. The Android goes to the Idle state by default.
+		androidState = new AndroidStateMachine ();
 		
 		// find the UI objects (buttons. text fields, etc).
 		editText_IpAddress = (EditText) findViewById (R.id.EditText_ipaddr);
@@ -112,12 +122,14 @@ public class TcaMainActivity extends Activity {
 		textView_Status = (TextView) findViewById (R.id.textView_Status);
 		textView_Imei = (TextView) findViewById(R.id.textView_Imei);
 		textView_Number = (TextView) findViewById(R.id.textView_Number);
-		
+	
+		// Set the context for the actions
+		actionRunner.setContext(this);
 
 		// gets the DeviceIdentifier object (singleton) and initialize it with the IMEI 
 		// and telephone number of this Android device.
-		deviceInfo = DeviceIdentifier.SINGLETON();
 		deviceInfo.initDeviceIdentification(this);
+
 		if (deviceInfo.getTelephoneNumber() == null || "".equals(deviceInfo.getTelephoneNumber())) {
 			// The telephone number was not stored on the SIM card, so it must be fill in by hand.
 			editText_phoneNumber.setVisibility(View.VISIBLE);
@@ -130,7 +142,7 @@ public class TcaMainActivity extends Activity {
 			// The handle message method to catch the messages and do something with it.
 			@Override
 			public void handleMessage(Message msg) {
-				// Check if the message is and event message. Otherwise, do nothing with it.
+				// Check if the message is an event message. Otherwise, do nothing with it.
 				if (msg.obj instanceof AndroidEvents) {
 					AndroidEvents event = (AndroidEvents) msg.obj;	
 				
@@ -138,112 +150,100 @@ public class TcaMainActivity extends Activity {
 					// It the wrong event is send, the present state is'n changed.
 					// So the thread (or the Server) that sends this message,
 					// must be aware of the present state.
-					
 					androidState.changeState(event, mainHandler);
 				
 					// Displays the Android device state on the UI.
-					showState ();
+					textView_State.setText(getStateString());
 
 					// change the UI components to enable or disable, depends of the present state.
-					setUIComponentsEnabled(androidState.getState().toString());
-				} else {
-					// The message must be an event message, so this block would never been used!
+					setUIComponentsEnabled(androidState.getState());
 				}
 			} 
 		};		
 
-		// Initialize the state machine. The Android goes to the Idle state by default.
-		androidState = new AndroidStateMachine ();
-		
 
 		// Displays the Android device state on the UI.
-		showState ();
+		textView_State.setText(getStateString());
 		
 		// display the Android device IMEI and telephone number on the UI.
-		showImei ();
-		showNumber ();
+		textView_Imei.setText(getImeiString ());
+		textView_Number.setText (getMsisdnString ());
 
 		// change the UI components to enable or disable, depends of the present Idle state (the default by initializing).
-		setUIComponentsEnabled(androidState.getState().toString());
+		setUIComponentsEnabled(androidState.getState());
 		
 		 // Initialize the onClick method that is activated when a user (engineer) push on
-		// the UI button: Register device
+		// the UI button: Register Android.
 		button_StartExpose.setOnClickListener(new Button.OnClickListener () {
 			@Override
 			public void onClick(View arg0) {
 				
-				// Gets the IP address. If it is not valid, "0" is returned.
-				String ipaddr = getValidIpAddress();
+				// Gets the IP address. If it is not valid, null is returned.
+				String ipAddr = getValidIpAddress(editText_IpAddress.getText().toString());
 				
 				// Check if the IP address is valid.
-				if (!ipaddr.equals("0")) {
+				if (ipAddr != null) {
 					
 					// Clears the status on the UI.
-					showStatus("");					
+					textView_Status.setText(getStatusString(""));					
+
 					// Add the Server IP address and the port number to the singleton deviceInfo object.
-					deviceInfo.initServerCommunication(ipaddr, PORTNUMBER);
+					deviceInfo.initServerCommunication(ipAddr, PORTNUMBER);
 
 					// Check if the Android device telephone number is found automatically.
 					if (deviceInfo.getTelephoneNumber()== null || "".equals(deviceInfo.getTelephoneNumber ())) {
 						// Get the telephoneNumber filled in by the user and place it in deviceInfo.
 						// If the user don't fill in a (valid) number, then it is null.
-						deviceInfo.setTelephoneNumber(getTelephoneNumber());
+						deviceInfo.setTelephoneNumber(getValidMsisdn());
 
 						// Display the telephone number on the UI.
-						showNumber ();
+						textView_Number.setText (getMsisdnString ());
 					}
 			
 					// check it a second time, because deviceInfo has already a valid number from
 					// the previous if statement.
-					if (deviceInfo.getTelephoneNumber() != null && !"".equals(getTelephoneNumber())) {
+					if (deviceInfo.getTelephoneNumber() != null && !"".equals(getValidMsisdn())) {
 						// go to the Expose state
 						androidState.changeState(AndroidEvents.START_EXPOSE, mainHandler);
 						
 						// Change the UI components to enable or disable, depends of the present state.
-						setUIComponentsEnabled(androidState.getState().toString());	
+						setUIComponentsEnabled(androidState.getState());	
 					} else {
 						// Shows a message on the UI that the user must fill in a telephone number.
-						showStatus ("Error: no (valid) telephone number!");
+						textView_Status.setText (getStatusString ("Error: no (valid) telephone number!"));
 					}
 								
 				} else {
 					// Shows a message on the UI that the user must fill in a Server IP address.
-					showStatus("Error: no valid Server IP address!");
+					textView_Status.setText (getStatusString("Error: no valid Server IP address!"));
 				}			
 				
 				// Displays the Android device state on the UI.
-				showState ();
+				textView_State.setText (getStateString ());
 			}
 			
 		});
 		
 		 // onClick is executed when the user push on the 'Stop testing' button
+		// the button is only visible if the Android is in the test state.
 		button_StopTest.setOnClickListener(new Button.OnClickListener () {
 			@Override
 			public void onClick(View arg0) {
 				if (androidState.getState() instanceof AndroidStateTest) {
 
 					// Clears the status on the UI.
-					showStatus ("");
+					textView_Status.setText (getStatusString (""));
 					androidState.changeState(AndroidEvents.STOP_TEST, mainHandler);
 
 					// change the UI components to enable or disable, depends of the present state.
-					setUIComponentsEnabled (androidState.getState().toString());
-
-				} else {
-					// The test can't be stopped because the Android isn't in the Test state.
-					// This block should never be activated because the UI button: 'Stop testing'
-					// is disabled and hidden (see method: setUIComponentsEnabled(..))
-					
-					// Shows a message on the UI that the device isn't in the test state.
-					showStatus ("Error: the device is not testing on this moment!");
-				}	
+					setUIComponentsEnabled (androidState.getState());
+				}
 				
 				// Displays the Android device state on the UI.
-				showState ();
+				textView_State.setText(getStateString());
 				
 				// Enable/Disable the UI components
-				setUIComponentsEnabled(androidState.getState().toString());
+				setUIComponentsEnabled(androidState.getState());
 			}
 		});
 			
@@ -254,8 +254,8 @@ public class TcaMainActivity extends Activity {
 	 * @version
 	 * @author Koen Nijmeijer 
 	 */
-	private void showState () {
-		textView_State.setText ("State: " + androidState.getState().toString());
+	private String getStateString () {
+		return "State: " + androidState.getState().toString();
 	}
 	
 	/**
@@ -264,8 +264,8 @@ public class TcaMainActivity extends Activity {
 	 * @author Koen Nijmeijer
 	 * @param status the status string to be showed
 	 */
-	private void showStatus (String status) {
-		textView_Status.setText ("Status: " + status);
+	private String getStatusString (String status) {
+		return "Status: " + status;
 	}
 	
 	/**
@@ -273,13 +273,14 @@ public class TcaMainActivity extends Activity {
 	 * @version
 	 * @author Koen Nijmeijer
 	 */
-	private void showImei () {
+	private String getImeiString () {
+		String imeiString;
 		if (deviceInfo.getImeiNumber() != null || !"".equals(deviceInfo.getImeiNumber())) {
-			textView_Imei.setText("IMEI: " + deviceInfo.getImeiNumber());			
+			imeiString = "IMEI: " + deviceInfo.getImeiNumber();
 		} else {
-			textView_Imei.setText("This device has no Imei Number!");
+			imeiString = "This device has no Imei Number!";
 		}
-
+		return imeiString;
 	}
 	
 	/**
@@ -287,15 +288,18 @@ public class TcaMainActivity extends Activity {
 	 * @version
 	 * @author Koen Nijmeijer
 	 */
-	private void showNumber () {
+	private String getMsisdnString () {
+		String msisdn;
+		
 		if (deviceInfo.getTelephoneNumber() != null && !"".equals(deviceInfo.getTelephoneNumber())) {
-			textView_Number.setText ("Number: " + deviceInfo.getTelephoneNumber());
+			msisdn = "Number: " + deviceInfo.getTelephoneNumber();
 		} else {
-			textView_Number.setText("No telephone number found!");
+			msisdn = "No telephone number found!";
 		}
+		return msisdn;
 	}
 	
-	private String getTelephoneNumber () {
+	private String getValidMsisdn () {
 		String nr = editText_phoneNumber.getText ().toString();
 		if (nr == null || "".equals(nr)) {
 			nr = "";
@@ -317,14 +321,12 @@ public class TcaMainActivity extends Activity {
 	 * @author Koen Nijmeijer
 	 * @return a valid IP address or "0" if not
 	 */
-	private String getValidIpAddress () {
+	private String getValidIpAddress (String ipAddress) {
 
 		// Initialize the return value.
-		String validIpAddress = "0";
+		String validIpAddress = null;
 		
-		// Get the IP address from User input.
-		String ipAddr = editText_IpAddress.getText().toString();
-		
+
 		// IP address must between: 0.0.0.0 - 255.255.255.255
 		// "\\d" means: any digit from 0-9
 		// "\\." means: '.'
@@ -336,11 +338,11 @@ public class TcaMainActivity extends Activity {
 				"([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." + 
 				"([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
 		
-		if (ipAddr.matches(IPPATTERN)) {
+		if (ipAddress.matches(IPPATTERN)) {
 			// IP address matches the pattern.
 			
 			// Splits the IP address in four parts, each part is one octal of the IP address.
-			String octals[] = ipAddr.split("\\.");
+			String octals[] = ipAddress.split("\\.");
 
 			if (octals.length == 4) {		
 				// it must be, because we checked it earlier with ipAddr.matches(IPPATTERN)
@@ -350,6 +352,7 @@ public class TcaMainActivity extends Activity {
 				//			- 172.16.x.x to 172.31.x.x
 				//			- 192.168.x.x
 				//			- 127.0.0.1
+				// If all this is true, then skip the first '0' if it is there (like 010.x.x.x ==> 10.x.x.x).
 				validIpAddress = (
 						(octals[0].equals("010") || octals[0].equals("10")) ||
 						(octals[0].equals("172") && 
@@ -360,12 +363,11 @@ public class TcaMainActivity extends Activity {
 								octals[1].equals("0") && 
 								octals[2].equals("0") && 
 								octals[3].equals("1"))
-				)?ipAddr :"0";
+				)? (ipAddress.charAt(0) == '0')?ipAddress.substring(1):ipAddress :null;
 			}
 		}
-		
-		// return "0" if the IP Address was not valid. remove the first "0" in 010.x.x.x.
-		return (validIpAddress.charAt(0) == '0' && validIpAddress.length()>1)? validIpAddress.substring(1) :validIpAddress;
+	
+		return validIpAddress;
 	}
 
 	/**
@@ -377,19 +379,36 @@ public class TcaMainActivity extends Activity {
 	 * @author Koen Nijmeijer
 	 * @param state the string value of the present state. 
 	 */
-	private void setUIComponentsEnabled (String state) {
+	private void setUIComponentsEnabled (IAndroidState state) {
 
 		// Enable/Disable the UI components.
-		button_StartExpose.setEnabled((state=="Android Idle" || state=="Android Ready")?true: false);
-		button_StopTest.setEnabled((state=="Android Test")?true: false);
-		editText_IpAddress.setEnabled((state=="Android Idle" || state=="Android Ready")?true: false);
-		editText_phoneNumber.setEnabled((state=="Android Idle")?true: false);
+		button_StartExpose.setEnabled((state instanceof AndroidStateIdle || state instanceof AndroidStateReady)?true: false);
+		button_StopTest.setEnabled((state instanceof AndroidStateTest)?true: false);
+		editText_IpAddress.setEnabled((state instanceof AndroidStateIdle || state instanceof AndroidStateReady)?true: false);
+		editText_phoneNumber.setEnabled((state instanceof AndroidStateIdle)?true: false);
 
 		// Hide/Shows the UI components.
-		button_StartExpose.setVisibility((state=="Android Idle" || state=="Android Ready")?View.VISIBLE: View.GONE);
-		button_StopTest.setVisibility((state=="Android Test")?View.VISIBLE: View.GONE);
-		editText_IpAddress.setVisibility((state=="Android Idle" || state=="Android Ready")?View.VISIBLE: View.GONE);
-		editText_phoneNumber.setVisibility((state=="Android Idle")?View.VISIBLE: View.GONE);
+		button_StartExpose.setVisibility((state instanceof AndroidStateIdle || state instanceof AndroidStateReady)?View.VISIBLE: View.GONE);
+		button_StopTest.setVisibility((state instanceof AndroidStateTest)?View.VISIBLE: View.GONE);
+		editText_IpAddress.setVisibility((state instanceof AndroidStateIdle || state instanceof AndroidStateReady)?View.VISIBLE: View.GONE);
+		editText_phoneNumber.setVisibility((state instanceof AndroidStateIdle)?View.VISIBLE: View.GONE);
 		
 	} // setUIComponentsEnabled
+	
+	public RemoteNetworkInfo getNetworkInfo() {
+		RemoteNetworkInfo info = new RemoteNetworkInfo();
+		
+		// Gets a telephony manager.
+		TelephonyManager manager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+		
+			// Fills the RemoteNetworkInfo
+			info.setDate(new Date ());
+			info.setCallState(manager.getCallState());
+			info.setDataActivity(manager.getDataActivity());
+			info.setDataState(manager.getDataState());
+			//TODO: and the rest.
+			//TODO: manifest permissions, otherwise it don't work.
+		
+		return info;
+	}
 }

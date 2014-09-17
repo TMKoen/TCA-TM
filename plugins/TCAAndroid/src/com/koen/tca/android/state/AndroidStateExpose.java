@@ -8,18 +8,17 @@ import com.koen.tca.common.message.AndroidEvents;
 /**
  * represents the Expose state.
  * <p>
- * This class implements the <code>IAndroidState</code> interface
  * @version
  * @author Koen Nijmeijer
  *
  */
-public class AndroidStateExpose implements IAndroidState {
+public class AndroidStateExpose extends AbstractAndroidState {
 
 	private ThreadExpose threadExpose;
 	
-	public AndroidStateExpose () {
+	public AndroidStateExpose (ThreadExpose threadExpose) {
 
-		threadExpose = new ThreadExpose ();
+		this.threadExpose = threadExpose;
 	}
 	
 	/**
@@ -32,19 +31,25 @@ public class AndroidStateExpose implements IAndroidState {
 	 * @author Koen Nijmeijer
 	 */
 	@Override
-	public void changeState(AndroidEvents androidEvent,
+	public IAndroidState changeState(AndroidEvents androidEvent,
 			AndroidStateMachine androidStateMachine) {
-	
+			super.changeState(androidEvent, androidStateMachine);
+			
+			IAndroidState state = this;
+			
+			
 		switch (androidEvent) {
 		case STOP_EXPOSE:
-			androidStateMachine.setState(new AndroidStateReady());
+			state = getStateMachine().createState(AndroidStates.READY);
 			break;
 		case STOP_EXPOSE_NO_SERVER:
-			androidStateMachine.setState(new AndroidStateIdle());
+			state = getStateMachine().createState(AndroidStates.IDLE);
 			break; 
 		default:
 			break;
 		}
+		
+		return state;
 
 	}
 
@@ -56,6 +61,8 @@ public class AndroidStateExpose implements IAndroidState {
 	 */
 	@Override
 	public void activateState(Handler mainActivityHandler) {
+		super.activateState(mainActivityHandler);
+		
 		// Start a new Thread that runs the state: Expose
 		threadExpose.startThread(mainActivityHandler);
 
@@ -70,7 +77,7 @@ public class AndroidStateExpose implements IAndroidState {
 	@Override
 	public String toString () {
 		
-		return "Android Expose";
+		return "Android Expose state";
 		
 	}
 }

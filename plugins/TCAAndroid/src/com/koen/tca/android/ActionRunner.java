@@ -1,5 +1,7 @@
 package com.koen.tca.android;
 
+import android.content.Context;
+
 import com.koen.tca.android.action.ITestAction;
 
 /**
@@ -19,6 +21,9 @@ public class ActionRunner {
 	// Holds the action that the Android device must test.
 	private ITestAction action;
 
+	// The main context (TCAMainActivity) of the Android app.
+	private Context context;
+	
 	// TODO: private ITestResult result;
 	
 	/**
@@ -73,6 +78,17 @@ public class ActionRunner {
 		// return the action object. return null if there is no action object.
 		return action;
 	}
+	
+
+	// sets the Context of the Android app. This is the reference point to TCAMainActivity.
+	public synchronized void setContext (Context context) {
+		this.context = context;
+	}
+	
+	public synchronized Context getContext () {
+		return this.context;
+	}
+	
 	/**
 	 * Starts the test.
 	 * <p>

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <lint>
+    <issue id="DefaultLocale">
+        <ignore path="src/com/koen/tca/android/state/thread/ThreadReady.java" />
+    </issue>
     <issue id="HandlerLeak">
         <ignore path="src/com/koen/tca/android/TcaMainActivity.java" />
     </issue>

@@ -1,5 +1,8 @@
 package com.koen.tca.android.state;
 
+import com.koen.tca.android.state.thread.ThreadExpose;
+import com.koen.tca.android.state.thread.ThreadReady;
+import com.koen.tca.android.state.thread.ThreadTest;
 import com.koen.tca.common.message.AndroidEvents;
 
 import android.os.Handler;
@@ -18,7 +21,7 @@ public class AndroidStateMachine {
 
 	public AndroidStateMachine () {
 		// Initialize the State machine to the first state: the Idle state.
-		setState (new AndroidStateIdle());
+		setState (createState (AndroidStates.IDLE));
 	}
 	
 	/**
@@ -30,15 +33,22 @@ public class AndroidStateMachine {
 	 * @author Koen Nijmeijer
 	 * @param androidState
 	 */
-	protected void setState (IAndroidState androidState) {
-		this.presentState = androidState;
+	private void setState (IAndroidState androidState) {
+		if (presentState != androidState) {
+			this.presentState = androidState;			
+		}
+
 	}
 	
 	/**
-	 * returns a handler to the present state.
+	 * returns the present state. It can be: AndroidStateIdle, AndroidStateExpose, AndroidStateReady or AndroidStateTest.
 	 * @version
 	 * @author Koen Nijmeijer
-	 * @return
+	 * @see AndroidStateIdle
+	 * @see AndroidStateExpose
+	 * @see AndroidStateReady
+	 * @see AndroidStateTest
+	 * @return an IAndroidState object which is the present state.
 	 */
 	public IAndroidState getState () {
 		return presentState;
@@ -57,15 +67,49 @@ public class AndroidStateMachine {
 	 */
 	public void changeState (AndroidEvents androidEvent, Handler mainActivityHandler) {
 		if (presentState != null) {
+
 			// Change the state and activates it.
-			presentState.changeState(androidEvent, this);
+			setState (presentState.changeState(androidEvent, this));
+
 			presentState.activateState(mainActivityHandler);
-		} else {
-			// Prints the String generated from the toString method.
-			System.out.println (this);
 		}
 	}
+
+
+	/**
+	 * creates a new IAndroidState object.After creating, it returns the new object.
+	 * @param state the AndroidStates state for the object that must be created
+	 * @return the new IAndroidState object
+	 * @see IAndroidState
+	 */
+	public IAndroidState createState (AndroidStates state) {
+		IAndroidState newState = null;
+
+		switch (state) {
+		case IDLE:
+			newState = new AndroidStateIdle ();
+			break;
+		case EXPOSE:
+			//newState = new AndroidStateExpose (new ThreadExpose());
+			newState = new AndroidStateExpose (new ThreadExpose().new TestThreadExpose());
+			break;
+		case READY:
+			// newState = new AndroidStateReady (new ThreadReady());
+			newState = new AndroidStateReady (new ThreadReady().new TestThreadReady());
+			break;
+		case TEST:
+			newState = new AndroidStateTest (new ThreadTest());
+			break;
+		}
+		return newState;
+	}
 	
+	/**
+	 * return a String message with the present state.
+	 * @version 1.0
+	 * @author Koen Nijmeijer
+	 * @return the String message
+	 */
 	@Override
 	public String toString () {
 		return presentState != null ? "state: " + presentState

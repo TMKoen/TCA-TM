@@ -21,19 +21,30 @@ import android.os.Handler;
  * @see toString()
  *
  */
-public class AndroidStateIdle implements IAndroidState {
+public class AndroidStateIdle extends AbstractAndroidState {
 
+	/**
+	 * Change the state of the Android. If the event is not valid for the Idle state, it returns itself.
+	 * @version: 1.0
+	 * @author Koen Nijmeijer
+	 * @param event The AndroidEvents event that change the state.
+	 * @param androidStateMachine the AndroidStateMachine to call back.
+	 * 
+	 */
 	@Override
-	public void changeState(AndroidEvents event,
+	public IAndroidState changeState(AndroidEvents event,
 			AndroidStateMachine androidStateMachine) {
-
+		super.changeState(event, androidStateMachine);
+		
+		IAndroidState state = this;
 		switch (event){
 		case START_EXPOSE:
-			androidStateMachine.setState(new AndroidStateExpose());
+			state = getStateMachine().createState(AndroidStates.EXPOSE);
 			break;
 		default:
 			break;
 		}
+		return state;
 
 	}
 
@@ -56,7 +67,7 @@ public class AndroidStateIdle implements IAndroidState {
 	@Override
 	public String toString () {
 		
-		return "Android Idle";
+		return "Android Idle state";
 		
 	}
 

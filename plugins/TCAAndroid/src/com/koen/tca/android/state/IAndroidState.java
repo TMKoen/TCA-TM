@@ -6,9 +6,11 @@ import android.os.Handler;
 
 public interface IAndroidState {
 
-	
-	public void changeState (AndroidEvents event, AndroidStateMachine androidStateMachine);
+
+	public IAndroidState changeState (AndroidEvents event, AndroidStateMachine androidStateMachine);
 	
 	public void activateState (Handler mainActivityHandler);
+	
+
 	
 }
