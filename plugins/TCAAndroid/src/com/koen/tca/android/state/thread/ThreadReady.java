@@ -76,8 +76,10 @@ public class ThreadReady implements IThreadState {
 			while (stopThread != true) {
 
 				// Make a new RemoteMsg to simulate the received one from the server.
-				RemoteAction remoteAction = new RemoteAction ("CALL");
+//				RemoteAction remoteAction = new RemoteAction ("CALL");
 
+				RemoteAction remoteAction = new RemoteAction ("GETWEBPAGE");
+				
 				// fills the maps
 //				remoteAction.getMap().put("", "");
 				remoteAction.getMap().put ("AnswerTime", "100");

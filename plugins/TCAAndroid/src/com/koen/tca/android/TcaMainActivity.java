@@ -395,7 +395,13 @@ public class TcaMainActivity extends Activity {
 		
 	} // setUIComponentsEnabled
 	
-	public RemoteNetworkInfo getNetworkInfo() {
+	/**
+	 * This method is called from the ActionRunner in another Thread, so it must be synchronized.
+	 * @version 1.0
+	 * @author Koen Nijmeijer
+	 * @return
+	 */
+	public synchronized RemoteNetworkInfo getNetworkInfo() {
 		RemoteNetworkInfo info = new RemoteNetworkInfo();
 		
 		// Gets a telephony manager.

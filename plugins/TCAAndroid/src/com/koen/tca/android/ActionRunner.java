@@ -1,8 +1,13 @@
 package com.koen.tca.android;
 
+import java.util.Map;
+
 import android.content.Context;
 
 import com.koen.tca.android.action.ITestAction;
+import com.koen.tca.common.message.RemoteAction;
+import com.koen.tca.common.message.RemoteResults;
+import com.koen.tca.common.message.RemoteUe;
 
 /**
  * Singleton class that holds the action that de Android device must test.
@@ -21,6 +26,8 @@ public class ActionRunner {
 	// Holds the action that the Android device must test.
 	private ITestAction action;
 
+	private RemoteResults results;
+	
 	// The main context (TCAMainActivity) of the Android app.
 	private Context context;
 	
@@ -36,6 +43,7 @@ public class ActionRunner {
 	 */
 	private ActionRunner () {
 		action = null;
+		results = null;
 	}
 
 	/**
@@ -97,12 +105,50 @@ public class ActionRunner {
 	 * @author Koen Nijmeijer
 	 */
 	public synchronized void startTest() {
+		RemoteAction remoteAction = null;
+		
 		if (action != null) {
+			remoteAction = new RemoteAction (action.getClass().getName().toString());
+
+			// Fills the results with the parameters of the action.
+			for (Map.Entry<String, String> entry : action.getParameters().entrySet()) {
+				remoteAction.getMap().put(entry.getKey(), entry.getValue());
+			}
+			
+			// Fills results with the UE parameters of the action
+			for (Map.Entry<String, RemoteUe> entry : action.getUeParameters().entrySet()) {
+				remoteAction.getUeMap().put(entry.getKey(), entry.getValue());
+			}
+			
+			// Make a new RemoteResults object with the name: the action class name.
+			results = new RemoteResults(action.getClass().getName());
+			results.setAction(remoteAction);
+
+			if (getContext () != null) {
+				// Store network info before the test.
+				results.setNetworkInfoBefore(((TcaMainActivity) getContext()).getNetworkInfo());				
+			}
+
+			// Start the test
 			action.startTest  ();
+			
+			if (getContext () != null) {
+				// Store network info after the test.
+				results.setNetworkInfoAfter(((TcaMainActivity) getContext()).getNetworkInfo());				
+			}
 		}
 	}
+
+	/**
+	 * returns the RemoteResults object that holds the results of the test.
+	 * @return the RemoteResults results.
+	 * @version 1.0
+	 * @author Koen Nijmeijer
+	 */
+	public synchronized RemoteResults getResults () {
+		// TODO: multiple copies by multiple threads??
+		return results;
+	}
 	
-	// TODO: public void setResult () {..}
-	// TODO: public Result getResult () {..}
 
 } // class ActionRunner
