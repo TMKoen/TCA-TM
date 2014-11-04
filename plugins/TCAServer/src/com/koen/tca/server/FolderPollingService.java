@@ -1,72 +1,71 @@
 package com.koen.tca.server;
 
 import java.io.File;
+import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.emf.common.util.URI;
 
 /**
  * Returns a collection of files.
- * @author Christophe
+ * @author Koen Nijmeijer
  */
 public class FolderPollingService {
 
-	// Specify as a
-	private String scriptPath;
-
-	private File[] filesInDirectory;
-
 	public FolderPollingService() {
-		// Sets the script path to the default test set.
-		scriptPath = "/Users/Christophe/Desktop/dragonX";
 	}
 
-	public void poll() {
-
-		try {
-
-			if (scriptPath == null) {
-				return; // Can't poll unknown directory.
-			}
-
-			final File rootFile = new File(scriptPath);
-			if (rootFile.isDirectory()) {
-				// Optionally specify a filter to find DragonX Files.
-				filesInDirectory = rootFile.listFiles();
+	/**
+	 * Finds all the .dragonx testcases, or finds a selection of .dragonx testcases.
+	 * @version 1.0
+	 * @author Koen Nijmeijer
+	 * @param path the String path to the directory where the scripts are stored.
+	 * @param testCases a array of Strings that represents a selection of testcases to poll (without '.dragonx')
+	 * @return all the .dragonx testcases in the directory of in the array list.
+	 */
+	public File [] poll (String path, String[] testCases) {
+		
+		File [] filesInDir = null;
+		File rootFile = new File (path);
+		
+		if (rootFile.isDirectory()) {
+			// Set a File filter to find only files with '.dragonx' extensions
+			FilenameFilter filter = new FilenameFilter () {
+				@Override
+				public boolean accept (File dir, String name) {
+					// Filters all the .dragonX files
+					if (name.substring(name.lastIndexOf('.')).toLowerCase().equals(".dragonx"))
+						return true;
+					return false;
+				}
+			};
+			
+			// Get all the .dragonX script files.
+			filesInDir = rootFile.listFiles(filter);
+			
+			if (testCases != null) {
+				// Find all the selected scripts
+				List<File> foundedFiles = new ArrayList<File>();
 				
-/*
-				FileFilter filter = new FileFilter () {
-					@Override
-					public boolean accept (File pathname) {
-						return pathname.toLowerCase().endsWith(".xtext");
+				for (String s: testCases) {
+					for (File f: filesInDir) {
+						if (f.getName().toLowerCase().equals(s.toLowerCase()+ ".dragonx")) {
+							// found one
+							foundedFiles.add(f);
+							break;
+						}
 					}
 				}
-
-
-				filesInDirectory = rootFile.listFiles(new FileNameFilter () {
-					public boolean accept (File dir, String name) {
-						return name.toLowerCase().endsWith(".xtext");
-					}
-				});
+				// Change List to array list.
+				filesInDir = foundedFiles.toArray(new File[foundedFiles.size()]);
 			}
-	*/
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
+		
+		// ==null if there where no Files or invalid path.
+		return filesInDir;
 	}
-
-	public File[] getFilesInDirectory() {
-		return filesInDirectory;
-	}
-
-	public String getScriptPath() {
-		return scriptPath;
-	}
-
-	public void setScriptPath(String scriptPath) {
-		this.scriptPath = scriptPath;
-	}
-
+	
 	public URI fileAsURI(File file) {
 		URI fileAsURI = URI.createFileURI(file.getAbsolutePath());
 		return fileAsURI;

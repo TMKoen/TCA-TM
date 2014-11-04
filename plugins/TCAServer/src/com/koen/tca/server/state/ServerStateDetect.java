@@ -21,6 +21,7 @@ public class ServerStateDetect extends AbstractServerState {
 	public ServerStateDetect() {
 
 		try {
+			// Sets the Server port number to 8888. With this port, Android devices Register itself to te server.
 			androidDetector = new AndroidDetector(8888);
 			androidDetector.setDetectResult(DetectResult.SINGLETON());
 

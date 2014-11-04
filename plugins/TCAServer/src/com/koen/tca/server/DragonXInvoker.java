@@ -21,9 +21,9 @@ import com.netxforge.netxtest.interpreter.IExternalDispatcher;
  * producing XTextResources.
  * 
  * @version
- * @author Christophe Bouhier
+ * @author Koen Nijmeijer
  */
-public class DragonXInvoker {
+public class DragonXInvoker implements Runnable {
 
 	@Inject
 	private IResourceFactory xResourceFactory;
@@ -37,6 +37,27 @@ public class DragonXInvoker {
 	@Inject
 	private IExternalDispatcher androidDispatcher;
 
+	// Handler to the Thread and the name of the thread.
+	private Thread invokerThread;
+
+	// The name of our Thread.
+	private final String threadName = "InvokerThread";
+
+	// If this bit is true, than the thread must be stopped.
+	private boolean stopThread;
+	
+	private File [] filesInDirectory;
+	
+	// the testSet that is tested.
+	private String testSet = null;
+	
+	private int totalTestScripts = 0, testsDone = 0;
+	
+	public DragonXInvoker () {
+		invokerThread = null;
+	}
+	
+	
 	protected XtextResource doGetResource(URI uri) throws Exception {
 
 		XtextResource resource = null;
@@ -64,21 +85,24 @@ public class DragonXInvoker {
 	 * {@link DragonXInterpreter} and finally invoke the interpreter with the
 	 * AST. This will emmit actions on the specified {@link IExternalDispatcher}
 	 */
-	public void invoke() {
+	public void invoke(String testSet, String [] testCases) {
 
-		// TODO Create a runnable.
+		this.testSet = testSet;
+		// Setup the interpreter.
+		interpreter.setExtDispatcher(androidDispatcher);
 
 		try {
 
-			// Get all the files in the directory.
-			// NOTE: Directory is hard-coded.
+			// search all the dragonX files in the directory.
+			// testSet is the name of the testSet. That is a Directory in the main path.
+			// testCases is a String array with all the testcase names in the testSet that must be tested.
+			filesInDirectory = scriptObtainer.poll(testSet, testCases);
 
-			// search all the dragonX files
-			scriptObtainer.poll();
-
-			File[] filesInDirectory = scriptObtainer.getFilesInDirectory();
-
-			if (filesInDirectory.length > 0) {
+			if (filesInDirectory != null && filesInDirectory.length > 0) {
+				
+				// activate a new thread that loops through all the testcases. 
+					startThread();
+/*		
 				URI fileAsURI = scriptObtainer.fileAsURI(filesInDirectory[0]);
 
 				XtextResource scriptAsResource = this.doGetResource(fileAsURI);
@@ -93,16 +117,18 @@ public class DragonXInvoker {
 							interpreter.setExtDispatcher(androidDispatcher);
 							interpreter.evaluate(script);
 						} else {
-							// invalid EMF Object, puke here.
+							// Invalid EMF Object.
 						}
 					}
 
 				} else {
 					// invalid script, throw Exception
 				}
+*/
 			} else {
 				// No files throw Exception
 			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			// catch any other exception
@@ -110,8 +136,82 @@ public class DragonXInvoker {
 	}
 
 	@Override
-	public String toString() {
+	public void run() {
 
-		return scriptObtainer.toString();
+		URI fileAsURI;
+		XtextResource scriptAsResource;
+		
+		// Number of all the testcases
+		totalTestScripts = filesInDirectory.length;
+		testsDone = 0;
+
+		// Stop the while loop when TestServer.stopTest(..) is called or testing all the scripts are done.
+		while (stopThread != true && testsDone < totalTestScripts) {
+			
+			// Gets the URI of the testcase file
+			fileAsURI = scriptObtainer.fileAsURI(filesInDirectory[testsDone]);
+			try {
+				scriptAsResource = this.doGetResource(fileAsURI);
+
+				// testCase is not empty
+				if (!scriptAsResource.getContents().isEmpty()) {
+
+					EList<EObject> contents = scriptAsResource.getContents();
+					if (contents.size() == 1) {
+						EObject script = contents.get(0);
+
+						if (script instanceof DragonX) {
+							
+							interpreter.evaluate((DragonX) script);
+						} else {
+							// Invalid EMF Object.
+						}
+					}
+
+				} else {
+					// invalid script, throw Exception
+				}
+				
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}	
+
+			// next script
+			testsDone++;
+		} // while loop
+		
+	}
+
+	public synchronized void startThread () {
+
+		// if there is another thread running, don't create a new thread
+		if (invokerThread == null) {
+			invokerThread = new Thread(this, threadName);
+			
+			// The while loop in the run method can begin.
+			stopThread = false;
+			invokerThread.start();
+		}
+		
+	}
+	
+	public synchronized void stopThread () {
+		// Stops The run() method (the while loop in it).
+		stopThread = true;
+	}
+	
+	@Override
+	public String toString() {
+		String details = "Total number of scripts: " + totalTestScripts + "\n";
+		details += "Scripts done:" + testsDone + "\n\n";  
+		details += "TestSet: " + this.testSet + "\n";
+		
+		details += "\nTestscripts: \n";
+		
+		for (int i=0; i< totalTestScripts; i++) {
+			details += filesInDirectory[i].getName() + "\n";
+		}
+		return details;
 	}
 }

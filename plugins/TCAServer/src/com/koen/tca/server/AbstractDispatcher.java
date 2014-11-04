@@ -17,7 +17,7 @@ import com.netxforge.netxtest.interpreter.IExternalDispatcher;
  * <li>A basic job which dispatches the action</li>
  * </ul>
  * 
- * @author Christophe Bouhier
+ * @author Koen Nijmeijer
  * 
  */
 public abstract class AbstractDispatcher implements IExternalDispatcher {
@@ -58,22 +58,29 @@ public abstract class AbstractDispatcher implements IExternalDispatcher {
 		}
 	}
 
-	/**
-	 * The IMEI numer of a Ue
-	 * 
-	 * @see {@link http 
-	 *      ://en.wikipedia.org/wiki/International_Mobile_Station_Equipment_Identity
-	 *      * }
-	 */
-	private String imeiNumber = null;
+	// The IMEI number of the UE
+	private String imei = null;
 
+	// The MSISDN of a UE
+	private String msisdn;
+
+	private String ipAddress;
+	
+	private String actionName = null;
+	
+	// The parameter being currently processed.
+	private String currentParameter;
+
+	private String ueName;
+
+	
 	/**
 	 * Get the IMEI.
 	 * 
 	 * @return
 	 */
 	public String getImeiNumber() {
-		return imeiNumber;
+		return imei;
 	}
 
 	/**
@@ -82,15 +89,9 @@ public abstract class AbstractDispatcher implements IExternalDispatcher {
 	 * @param imeiNumber
 	 */
 	public void setImeiNumber(String imeiNumber) {
-		this.imeiNumber = imeiNumber;
+		this.imei = imeiNumber;
 	}
 
-	/**
-	 * The MSISDN of a UE
-	 * 
-	 * @link
-	 */
-	private String msisdn;
 
 	public String getMsisdn() {
 		return msisdn;
@@ -100,7 +101,6 @@ public abstract class AbstractDispatcher implements IExternalDispatcher {
 		this.msisdn = msisdn;
 	}
 
-	private String ipAddress;
 
 	public String getIpAddress() {
 		return ipAddress;
@@ -110,8 +110,7 @@ public abstract class AbstractDispatcher implements IExternalDispatcher {
 		this.ipAddress = ipAddress;
 	}
 
-	private String actionName = null;
-
+	
 	public String getActionName() {
 		return actionName;
 	}
@@ -120,10 +119,7 @@ public abstract class AbstractDispatcher implements IExternalDispatcher {
 		this.actionName = actionName;
 	}
 
-	/**
-	 * The parameter being currently processed.
-	 */
-	private String currentParameter;
+
 
 	public String getCurrentParameter() {
 		return currentParameter;
@@ -132,8 +128,6 @@ public abstract class AbstractDispatcher implements IExternalDispatcher {
 	public void setCurrentParameter(String currentParameter) {
 		this.currentParameter = currentParameter;
 	}
-
-	private String ueName;
 
 	public String getUeName() {
 		return ueName;
@@ -145,7 +139,8 @@ public abstract class AbstractDispatcher implements IExternalDispatcher {
 
 	@Override
 	public void processAction(Action action) {
-		this.setActionName(action.getName().toString());
+		this.setActionName(action.getActionCode().toString());
+//		this.setActionName(action.getName().toString());
 	}
 
 	@Override
@@ -165,7 +160,7 @@ public abstract class AbstractDispatcher implements IExternalDispatcher {
 		case IMEI: {
 			this.setImeiNumber(metaObject.getParamValue());
 		}break;
-		case MSIDN: {
+		case MSISDN: {
 			this.setMsisdn(metaObject.getParamValue());
 		}break;
 		}

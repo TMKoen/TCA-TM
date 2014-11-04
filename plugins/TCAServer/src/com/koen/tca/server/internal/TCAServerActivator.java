@@ -1,7 +1,10 @@
 package com.koen.tca.server.internal;
 
+import java.io.File;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -96,6 +99,8 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 
 		// guice makes a new TCAServer object.
 		server = this.getInjector().getInstance(TCAServer.class);
+
+	
 		server.start();
 
 	}
@@ -232,77 +237,89 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 	 * are used by OSGI to add new commands for the console.
 	 * 
 	 * @version
-	 * @author Christophe Bouhier, Koen Nijmeijer
-	 * @param intp
-	 * @return
+	 * @author Koen Nijmeijer
+	 * @param intp the interpreter from the OSGI command line.
+	 * @return the message String for the command line
 	 */
 	public Object _tca(CommandInterpreter intp) {
 
-		// The event that was fired.
-		@SuppressWarnings("unused")
-		ServerEvents fireEvent = null;
+		final String STATE_DETAILS = "\n Details:\n----------\n";
+		final String STATE = "The current server state is: ";
+		final String UPLOAD = "TODO: upload";
+		final String RESULT = "TODO: result";
+		final String NO_VALID_ARGS = "No valid arguments!\n";
+		final String NO_VALID_COMMAND = "No valid command!\n";
+		
+		String arg1 = intp.nextArgument();
+		String arg2 = intp.nextArgument();
+		String arg3 = intp.nextArgument();
+		String arg4 = intp.nextArgument();
+
+		
+		// The return message
+		String message = NO_VALID_COMMAND;
 
 		// gets the present state of the server.
-		IServerState state = this.server.getTestServer().getStateMachine()
-				.getState();
+		IServerState state = this.server.getTestServer().getStateMachine().getState();
 
-		// The message to be send to the user.
-		String message = "Wrong or no arguments!\n" + getHelp();
 
-		// Other arguments on the command line.
-		String nextArgument2 = null;
-		String nextArgument3 = null;
+		// A list that holds all the testCases that is filled in on the command line.
+		List<String> testCases = null;
 
-		// get the next command line argument after 'tca'..
-		String nextArgument = intp.nextArgument();
+		String [] testCasesArray = null;
+		
+		// Find possible testCase arguments for 'event start_test <testSet> [testCase_1]..[testCase_x]'
+		if (arg4 != null) {
+			testCases = new ArrayList<String>();
+			String nextArg = arg4;
+			do {
+				testCases.add(nextArg);
+			} while ((nextArg = intp.nextArgument()) != null);
+	
+			// put all the List items in an fixed array
+			testCasesArray = testCases.toArray(new String[testCases.size()]);
+		} 
+		
+		if (arg1 != null) 
+			if (arg1.equals("state") && (arg2 == null || (arg2.equals("details") && arg3 == null)) ) {
 
-		// There must be an argument after 'tca' on the command line
-		if (nextArgument != null) {
 
-			// this command line argument can be used in all the server states.
-			if (nextArgument.equals("state")) {
+				if (arg2 != null)
+					// Command is 'state [details]'.
+					message = STATE_DETAILS + state.details();
+				else
+					// Command is 'state'.
+					message = STATE + state;
+				
+			} else 
+			if (arg1.equals("upload") && arg2 != null && arg3 != null && arg4 == null) {
+				// Command is 'upload <testSet> <testCase>'
+				// TODO: check the path and testcase name..
+				message = UPLOAD;
+				
+			} else 
+			if (arg1.equals("result") && arg2 == null) {
+				// Arguments are 'result'
+				// TODO: get the results
+				message = RESULT;
+			} else 
+			if (arg1.equals("event") && arg2 != null && 
+				((arg2.equals("idle") && arg3 == null) || (arg2.equals("start_detect") && arg3 == null) || (arg2.equals("stop_detect") && arg3 == null) || 
+				 (arg2.equals("stop_test") && arg3 == null) || (arg2.equals("fake_ue") && arg3 == null) || (arg2.equals("start_test") && arg3 != null))
+				) {
+				
+				// Arguments are 'event <idle | start_detect | stop_detect | stop_test | fake_ue | start_test <testSet> [testCase_1].. [testCase_x]>'
+				message = eventArgument(state, arg2, arg3, testCasesArray);
+				
+			} else {
+				// No valid arguments.
+				message = NO_VALID_ARGS + getHelp();
+			}	
 
-				// finds the next argument if any.
-				nextArgument2 = intp.nextArgument();
-				if (nextArgument2 != null) {
-					if (nextArgument2.equals("details")) {
-
-						// check is there is no other argument on the command
-						// line.
-						nextArgument3 = intp.nextArgument();
-						if (nextArgument3 == null) {
-							message = "\n Details:\n-------------\n"
-									+ state.details();
-						}
-					}
-				} else {
-					message = "The current server state is: " + state;
-				}
-
-			} else if (nextArgument.equals("upload")) {
-				nextArgument2 = intp.nextArgument();
-				if (nextArgument2 != null) {
-					// TODO: check the path and testcase name..
-					message = "TODO: upload";
-				}
-
-			} else if (nextArgument.equals("result")) {
-				nextArgument2 = intp.nextArgument();
-				// check if there is no other argument on the command line.
-				if (nextArgument2 == null) {
-					message = "TODO: result";
-				}
-			} else if (nextArgument.equals("event")) {
-				nextArgument2 = intp.nextArgument();
-				if (nextArgument2 != null) {
-					message = eventArgument(state, nextArgument2);
-				}
-			}
-		}
 		return message;
 	}
 
-	private String eventArgument(IServerState state, String argument) {
+	private String eventArgument(IServerState state, String argument, String testSet, String[] testCases) {
 
 		String message = "fire event: ";
 		if (argument != null) {
@@ -338,7 +355,11 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 			} else if (argument.equals("start_test")
 					&& state instanceof ServerStateReady) {
 				try {
-					server.getTestServer().startTestSet(null, "");
+					if (testCases == null)
+						server.getTestServer().startTestSet(null, testSet);						
+					else
+						server.getTestServer().startTestCase(null, testSet, testCases);
+					
 					message += ServerEvents.START_TEST;
 				} catch (RemoteException e) {
 					e.printStackTrace();
@@ -398,7 +419,7 @@ public class TCAServerActivator implements BundleActivator, CommandProvider {
 				+ "\n           - event fake_ue => Fake the discovery of UE's with dummy values"
 				+ "\n      In Ready state:"
 				+ "\n           - event start_detect"
-				+ "\n           - event start_test"
+				+ "\n           - event start_test <testset> [testcase1]..[testcaseX]"
 				+ "\n           - event idle"
 				+ "\n           - upload <testcase>"
 				+ "\n           - results"

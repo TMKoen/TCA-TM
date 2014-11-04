@@ -2,9 +2,13 @@ package com.koen.tca.server.state;
 
 import com.google.inject.Inject;
 import com.koen.tca.server.DragonXInvoker;
+import com.koen.tca.server.state.IServerState.STATES;
 
 public class ServerStateTest extends AbstractServerState {
 
+	String testSet = null;
+	String [] testCases = null;
+	
 	/**
 	 * Invoker for the script files. Start the script and gets the actions
 	 */
@@ -24,8 +28,10 @@ public class ServerStateTest extends AbstractServerState {
 
 		case STOP_TEST:
 		case FINISHED:
-			// The Server goes to the 'Wait' state
-			state = new ServerStateReady ();
+			// Stops the thread that is responsible for the handling (validating) of the script actions.
+			dragonXInvoker.stopThread();
+			// The Server goes to the 'Ready' state
+			state = getContext().createState(STATES.READY);
 			break;
 		default:
 			// the other serverEvents are not valid in the 'Test' state
@@ -38,7 +44,7 @@ public class ServerStateTest extends AbstractServerState {
 	@Override
 	public void activateState(ServerStateMachine context) {
 		super.activateState(context);
-		dragonXInvoker.invoke();
+		dragonXInvoker.invoke(testSet, testCases);
 	}
 
 	@Override
@@ -49,8 +55,14 @@ public class ServerStateTest extends AbstractServerState {
 	@Override
 	public String details() {
 
-		// TODO Read out the invoker
-		return super.details();
+		return "State is Testing\n" + dragonXInvoker.toString();
+	}
+	
+	public void setTestSet (String testSet) {
+		this.testSet = testSet;
 	}
 
+	public void setTestCases (String [] testCases) {
+		this.testCases = testCases;
+	}
 }

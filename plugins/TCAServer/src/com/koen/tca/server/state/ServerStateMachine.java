@@ -13,6 +13,11 @@ import com.koen.tca.server.state.IServerState.STATES;
  */
 public class ServerStateMachine implements IStateCallBack {
 
+	// path and testcases to be invoked by the test state.
+	private String path = null;
+	private String[] testCases = null;
+	
+	
 	private IServerState presentState;
 
 	public ServerStateMachine() {
@@ -32,7 +37,13 @@ public class ServerStateMachine implements IStateCallBack {
 			if (!presentState.equals(state)) {
 
 				// a new IServerState object is created.
-				presentState = state;
+				setState (state);
+
+				if (state instanceof ServerStateTest) {
+					// set parameters for the test: the path and testcases to be tested
+					((ServerStateTest) state).setTestSet(path);
+					((ServerStateTest) state).setTestCases(testCases);
+				}
 
 				// The presentState is changed, we can now activate it.
 				presentState.activateState(this);
@@ -48,9 +59,7 @@ public class ServerStateMachine implements IStateCallBack {
 		}
 	}
 
-	// public void activateState() {
-	// presentState.activateState();
-	// }
+
 
 	/**
 	 * This method is only used by the ServerState classes to set the new state.
@@ -109,6 +118,18 @@ public class ServerStateMachine implements IStateCallBack {
 
 		throw new IllegalStateException("Can't process the requested state:"
 				+ requestedState);
+	}
+	
+	/**
+	 * This parameters are used by the test state to device which path and testcases beeing tested.
+	 * @version 1.0
+	 * @author Koen Nijmeijer
+	 * @param path
+	 * @param testCases
+	 */
+	public void setTestParams (String path, String[] testCases) {
+		this.path = path;
+		this.testCases = testCases;
 	}
 
 }

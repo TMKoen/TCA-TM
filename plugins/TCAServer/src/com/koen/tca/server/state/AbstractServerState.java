@@ -24,7 +24,7 @@ public abstract class AbstractServerState implements IServerState,
 
 	@Override
 	public String details() {
-		return "[TODO] Implementators should also override this method and provide it's own details";
+		return "Implementators should also override this method and provide it's own details";
 	}
 
 	@Override

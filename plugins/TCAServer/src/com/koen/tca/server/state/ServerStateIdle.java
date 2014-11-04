@@ -34,6 +34,11 @@ public class ServerStateIdle extends AbstractServerState {
 
 	@Override
 	public String toString() {
-		return "I am currently idle... tap tap..., any detection work for me?";
+		return "I am currently idle";
+	}
+	
+	@Override
+	public String details () {
+		return "State is Idle.\nNo UE's registered.\n";
 	}
 }

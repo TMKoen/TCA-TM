@@ -124,7 +124,7 @@ public class AndroidDetector extends RemoteUserEquipment {
 					// device.
 					clientSocket = serverSocket.accept();
 
-					System.out.println("Server has found a telephone!");
+					System.out.println("Server has found a UE!");
 
 					// Initialize a ObjectInputStread. It blocks until
 					// ObjectOutputStream on the Android device flush it.
@@ -143,17 +143,15 @@ public class AndroidDetector extends RemoteUserEquipment {
 					// check if the message was send. If there was an exception
 					// or timeout, then remoteMsg must be null.
 					if (remoteMsg != null && remoteMsg instanceof ExposeMessage) {
-
-						// check if it is a Expose message
-
-						System.out
-								.println("Server has received a Expose message");
-
+						
 						// Store the Android device info in the list.
 						storeDeviceInfo(((ExposeMessage) remoteMsg).getImei(),
 								((ExposeMessage) remoteMsg).getNumber(),
-								clientSocket.getInetAddress().toString());
+								clientSocket.getInetAddress().getHostAddress());
 
+
+
+						
 						// Initialize the ObjectOutputStream.
 						remoteMessageTransmitter.setOutputStream(clientSocket
 								.getOutputStream());

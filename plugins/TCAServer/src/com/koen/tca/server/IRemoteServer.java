@@ -48,7 +48,7 @@ public interface IRemoteServer extends Remote {
 	 * @param testCase
 	 * @throws RemoteException
 	 */
-	public void startTestCase (ICallBackClient callBackClient, String testCase) throws RemoteException;
+	public void startTestCase (ICallBackClient callBackClient, String testSet, String[] testCases) throws RemoteException;
 	
 	
 	/**
