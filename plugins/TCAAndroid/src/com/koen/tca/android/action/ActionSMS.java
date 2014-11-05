@@ -7,17 +7,26 @@ import com.koen.tca.common.message.RemoteUe;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 
 public class ActionSMS  implements ITestAction {
 
 	private Map <String, String> parameters;
 	private Map <String, RemoteUe> ueParameters;
-	
+	private ActionRunner actionRunner = ActionRunner.SINGLETON();	
 	
 	public ActionSMS () {
 		
 	}
 
+	@Override
+	public void startTest(Handler mainActivityHandler) {
+		if (actionRunner.getContext() != null) {
+			sendSMS (actionRunner.getContext());
+		}
+		
+	}
+	
 	/**
 	 * Send a SMS.
 	 * @param context
@@ -31,15 +40,7 @@ public class ActionSMS  implements ITestAction {
 		context.startActivity(sendIntent);		
 	}
 
-	@Override
-	public void startTest() {
-		ActionRunner actionRunner = ActionRunner.SINGLETON();
-
-		if (actionRunner.getContext() != null) {
-			sendSMS (actionRunner.getContext());
-		}
-		
-	}
+	
 
 	@Override
 	public void setUeParameters(Map<String, RemoteUe> ueParam) {

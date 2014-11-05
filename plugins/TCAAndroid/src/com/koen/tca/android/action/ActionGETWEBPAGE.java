@@ -8,6 +8,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
+import android.os.Handler;
+
 import com.koen.tca.android.ActionRunner;
 import com.koen.tca.common.message.RemoteUe;
 
@@ -21,7 +23,7 @@ public class ActionGETWEBPAGE implements ITestAction  {
 	}
 
 	@Override
-	public void startTest() {
+	public void startTest(Handler mainActivityHandler) {
 		
 		ActionRunner actionRunner = ActionRunner.SINGLETON();
 

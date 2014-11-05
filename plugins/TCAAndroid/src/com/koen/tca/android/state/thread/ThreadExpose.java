@@ -110,7 +110,7 @@ public class ThreadExpose implements IThreadState {
 	}
 	
 	@Override
-	public void stopThread() {
+	public synchronized void stopThread() {
 		// Because this thread stops direct after the exposer, this method is not used. 
 		
 	}	

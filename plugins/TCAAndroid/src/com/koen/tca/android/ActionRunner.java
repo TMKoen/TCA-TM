@@ -3,6 +3,7 @@ package com.koen.tca.android;
 import java.util.Map;
 
 import android.content.Context;
+import android.os.Handler;
 
 import com.koen.tca.android.action.ITestAction;
 import com.koen.tca.common.message.RemoteAction;
@@ -104,7 +105,7 @@ public class ActionRunner {
 	 * @version
 	 * @author Koen Nijmeijer
 	 */
-	public synchronized void startTest() {
+	public synchronized void startTest(Handler mainHandler) {
 		RemoteAction remoteAction = null;
 		
 		if (action != null) {
@@ -130,7 +131,7 @@ public class ActionRunner {
 			}
 
 			// Start the test
-			action.startTest  ();
+			action.startTest (mainHandler);
 			
 			if (getContext () != null) {
 				// Store network info after the test.

@@ -11,8 +11,9 @@ package com.koen.tca.android.action;
  *
  */
 public enum ActionObjects { ActionCALL, 
-							ActionINCOMINGCALL,
-							ActionGETWEBPAGE,
-							ActionSMS
+							ActionANSWER,
+							ActionDATA,
+							ActionSMS,
+							ActionUSSD
 
 }

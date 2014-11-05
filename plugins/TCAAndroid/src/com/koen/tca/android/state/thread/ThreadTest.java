@@ -34,7 +34,7 @@ public class ThreadTest implements IThreadState {
 	 * @param mainActiviyHandler the Handler to the main UI thread for call back
 	 */
 	@Override
-	public void startThread (Handler mainActivityHandler) {
+	public synchronized void startThread (Handler mainActivityHandler) {
 		if (threadTest == null) {
 			mainHandler = mainActivityHandler;
 			threadTest = new Thread (this, threadName);
@@ -59,7 +59,7 @@ public class ThreadTest implements IThreadState {
 		if (actionRunner.getAction() != null) {
 	
 			// Start the test
-			actionRunner.startTest();
+			actionRunner.startTest(mainHandler);
 		}
 
 		// Event to stop the Test state and goes back to the Ready state.
@@ -69,6 +69,18 @@ public class ThreadTest implements IThreadState {
 		Message msg = mainHandler.obtainMessage();
 		msg.obj = event;
 		mainHandler.sendMessage (msg);
+		
+	}
+	
+	/**
+	 * Activates the thread after an wait.
+	 * @version 1.0
+	 * @author Koen Nijmeijer
+	 *
+	 */
+	public synchronized void wakeupThread () {
+		// wakes up the thread test
+		threadTest.notify();
 		
 	}
 	

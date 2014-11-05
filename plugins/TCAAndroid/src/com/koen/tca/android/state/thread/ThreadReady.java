@@ -67,26 +67,76 @@ public class ThreadReady implements IThreadState {
 
 			IMessage remoteMsg = null;
 			AndroidEvents event;
-			
-			RemoteUe ue = new RemoteUe ();
-			ue.setImei("353687065694298");
-			ue.setMsisdn("0653740326");
-			ue.setName("Device A");
 
+			RemoteUe ue1 = new RemoteUe ();
+			ue1.setImei("354720050558902");
+			ue1.setMsisdn("0648603223");
+			ue1.setName("ue1");
+			
+			RemoteUe ue2 = new RemoteUe ();
+			ue2.setImei("");
+			ue2.setMsisdn("0648603226");
+			ue2.setName("u2");
+
+			RemoteUe ue3 = new RemoteUe ();
+			ue3.setImei("353687065694298");
+			ue3.setMsisdn("0653740326");
+			ue3.setName("ue3");
+
+			
+			RemoteAction remoteActionCall = new RemoteAction ("CALL");
+			RemoteAction remoteActionAnswer = new RemoteAction ("ANSWER");
+			RemoteAction remoteActionSMS = new RemoteAction ("SMS");
+			RemoteAction remoteActionData = new RemoteAction ("DATA");
+			RemoteAction remoteActionUssd = new RemoteAction ("USSD"); 
+
+			// Set parameters for call action
+			remoteActionCall.getMap().put("from", "ue1");
+			remoteActionCall.getMap().put("to", "ue3");
+			remoteActionCall.getMap().put("callingTime", "5");
+			remoteActionCall.getMap().put("responseTime", "10");
+			remoteActionCall.getMap().put("offHookResponse", "HangUp"); // can be: Listening or HangUp
+			remoteActionCall.getUeMap().put(ue1.getName(), ue1);
+			remoteActionCall.getUeMap().put(ue3.getName(), ue3);
+			
+			// Set parameters for Answer action
+			remoteActionAnswer.getMap().put("from", "ue1");
+			remoteActionAnswer.getMap().put("listeningTime", "10");
+			remoteActionAnswer.getMap().put("answerTime", "10");
+			remoteActionAnswer.getMap().put("response","HangUp");	// can be: Listening, OffHook or HangUp
+			remoteActionAnswer.getUeMap().put(ue1.getName(), ue1);
+	
+			// Set parameters for SMS action
+			remoteActionSMS.getMap().put("from", "ue1");
+			remoteActionSMS.getMap().put("to", "ue3");
+			remoteActionSMS.getMap().put("message", "Dit is een testSMS van 0653740326 naar 0648603223.");
+			remoteActionSMS.getUeMap().put(ue1.getName(), ue1);
+			remoteActionSMS.getUeMap().put(ue3.getName(), ue3);
+			
+			// Set parameters for Data action
+			remoteActionData.getMap().put("from", "ue2");
+			remoteActionData.getMap().put("url","http://www.verkeersschoolkoen.nl/verkeersschoolkoen.php");
+			remoteActionData.getMap().put("to", "ue3");
+			remoteActionData.getMap().put("data", "Data");
+			remoteActionData.getUeMap().put(ue1.getName(), ue1);
+			remoteActionData.getUeMap().put(ue3.getName(), ue3);
+			
+			// Set parameters for USSD
+//			remoteActionUssd.getMap().put("from", "ue1");
+//			remoteActionUssd.getMap().put("cfCode", "CFU");	// can be: CFU, CFB, CFNA, CFNR, ACD
+//			remoteActionUssd.getMap().put("destination", "ue3");	// only by cfCode
+//			remoteActionUssd.getMap().put("serviceDelay", "10");	// only by cfCode
+//			remoteActionUssd.getMap().put("barringCode", "AllOutgoingCalls");		// Can be: AllOutgoingCalls, AllIncomingCalls, AllOutgoingCallsExHome, AllIncommingCallsRoaming
+//			remoteActionUssd.getMap().put("code", "10");	// Only by barringCode. code can be: 
+			remoteActionUssd.getMap().put("liCode", "CLIR");	// can be: CLIP, CLIR, COLP or COLR
+			remoteActionUssd.getMap().put("ussdregistration", "Activate");	// can by Activate or Deactivate 
+			remoteActionUssd.getUeMap().put(ue1.getName(), ue1);
+			
 			while (stopThread != true) {
 
-				// Make a new RemoteMsg to simulate the received one from the server.
-//				RemoteAction remoteAction = new RemoteAction ("CALL");
-
-				RemoteAction remoteAction = new RemoteAction ("GETWEBPAGE");
-				
-				// fills the maps
-//				remoteAction.getMap().put("", "");
-				remoteAction.getMap().put ("AnswerTime", "100");
-				remoteAction.getUeMap().put("Device A", ue);
 
 				// simulate a received RemoteMessage.
-				remoteMsg = new ActionMessage (remoteAction);
+				remoteMsg = new ActionMessage (remoteActionUssd);
 
 				if (remoteMsg != null && remoteMsg instanceof ActionMessage) {
 					RemoteAction intentAction = ((ActionMessage) remoteMsg)
@@ -199,7 +249,7 @@ public class ThreadReady implements IThreadState {
 	private final int timeout = 1000 * 60;
 	private final int readTimeout = 1000 * 30;
 	
-	final String threadName = "Ready thread";
+	final String threadName = "Ready";
 
 	public ThreadReady() {
 		readyThread = null;
@@ -219,8 +269,6 @@ public class ThreadReady implements IThreadState {
 	public synchronized void stopThread() {
 		// Stops the thread
 		setStopThread(true);
-//		readyThread = null;
-//		mainHandler = null;
 	}
 
 	public void run() {

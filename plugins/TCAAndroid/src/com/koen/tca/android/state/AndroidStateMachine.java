@@ -90,12 +90,16 @@ public class AndroidStateMachine {
 			newState = new AndroidStateIdle ();
 			break;
 		case EXPOSE:
-			//newState = new AndroidStateExpose (new ThreadExpose());
-			newState = new AndroidStateExpose (new ThreadExpose().new TestThreadExpose());
+			newState = new AndroidStateExpose (new ThreadExpose());
+
+			// For testing without the server:
+//			newState = new AndroidStateExpose (new ThreadExpose().new TestThreadExpose());
 			break;
 		case READY:
-			// newState = new AndroidStateReady (new ThreadReady());
-			newState = new AndroidStateReady (new ThreadReady().new TestThreadReady());
+			newState = new AndroidStateReady (new ThreadReady());
+			
+			// For testing without the server:
+//			newState = new AndroidStateReady (new ThreadReady().new TestThreadReady());
 			break;
 		case TEST:
 			newState = new AndroidStateTest (new ThreadTest());

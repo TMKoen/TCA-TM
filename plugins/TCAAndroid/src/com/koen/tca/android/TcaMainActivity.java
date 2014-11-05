@@ -1,8 +1,10 @@
 package com.koen.tca.android;
 
 import java.util.Date;
+import java.util.List;
 
 import com.koen.tca.android.DeviceIdentifier;
+import com.koen.tca.android.action.PhoneStateListenerMessages;
 import com.koen.tca.android.state.AndroidStateIdle;
 import com.koen.tca.android.state.AndroidStateMachine;
 import com.koen.tca.android.state.AndroidStateReady;
@@ -11,13 +13,35 @@ import com.koen.tca.android.state.AndroidStateTest;
 
 import com.koen.tca.android.state.IAndroidState;
 import com.koen.tca.common.message.AndroidEvents;
+import com.koen.tca.common.message.RemoteCallInfo;
 import com.koen.tca.common.message.RemoteNetworkInfo;
+import com.koen.tca.common.message.telephony.AndroidCellInfoCdma;
+import com.koen.tca.common.message.telephony.AndroidCellInfoGsm;
+import com.koen.tca.common.message.telephony.AndroidCellInfoLte;
+import com.koen.tca.common.message.telephony.AndroidCellInfoWcdma;
+import com.koen.tca.common.message.telephony.AndroidCellLocation;
+import com.koen.tca.common.message.telephony.AndroidCellLocationCdma;
+import com.koen.tca.common.message.telephony.AndroidCellLocationGsm;
+import com.koen.tca.common.message.telephony.AndroidNeighboringCellInfo;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.telephony.CellInfo;
+import android.telephony.CellInfoCdma;
+import android.telephony.CellInfoGsm;
+import android.telephony.CellInfoLte;
+import android.telephony.CellInfoWcdma;
+import android.telephony.CellLocation;
+import android.telephony.NeighboringCellInfo;
+import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.telephony.cdma.CdmaCellLocation;
+import android.telephony.gsm.GsmCellLocation;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -49,6 +73,7 @@ import android.widget.TextView;
  * @author Koen Nijmeijer
  *
  */
+@TargetApi(Build.VERSION_CODES.KITKAT)
 public class TcaMainActivity extends Activity {
 
 	// Creates an object of ActionRunnner. It is a singleton, so there can be only one object of this class.
@@ -93,7 +118,14 @@ public class TcaMainActivity extends Activity {
 	// the handler to the UI Telephone number TextView
 	private TextView textView_Number;
 
-
+	// The handler that listens to PhoneState changes like: ringing, off hook, etc.
+	private PhoneStateListener listener;
+	
+	// Handler to the telephony network information (cell info, telephone number, etc).
+	private TelephonyManager manager;
+	
+	// Holds the information when the call is invoked.
+	private RemoteCallInfo callInfo;
 	
 	/**
 	 * Initialize and starts the activity (user interface).
@@ -157,6 +189,22 @@ public class TcaMainActivity extends Activity {
 
 					// change the UI components to enable or disable, depends of the present state.
 					setUIComponentsEnabled(androidState.getState());
+				}
+				if (msg.obj instanceof PhoneStateListenerMessages) {
+					PhoneStateListenerMessages  phoneStateMessage = (PhoneStateListenerMessages) msg.obj;
+					switch (phoneStateMessage) {
+					case LISTEN_CALL:
+						activateCallListener();
+						break;
+					case LISTEN_INCOMINGCALL:
+						break;
+					case LISTEN_GETWEBPAGE:
+						break;
+					case STOP_LISTENING:
+						stopPhoneStateListener();
+						break;
+					}
+					
 				}
 			} 
 		};		
@@ -412,9 +460,261 @@ public class TcaMainActivity extends Activity {
 			info.setCallState(manager.getCallState());
 			info.setDataActivity(manager.getDataActivity());
 			info.setDataState(manager.getDataState());
-			//TODO: and the rest.
+			info.setDeviceIDID(manager.getDeviceId());
+			info.setDeviceSoftwareVersion(manager.getDeviceSoftwareVersion());
+			info.setGroepIdLevel1(manager.getGroupIdLevel1());
+			info.setHasICCCard(manager.hasIccCard());
+			
+			// TODO.. check if GSM or CDMA.. deviceID is not always Imei
+			info.setImei(manager.getDeviceId());
+			info.setLine1Number(manager.getLine1Number());
+			info.setMmsUserAgent(manager.getMmsUserAgent());
+			info.setMmsUserAgentUrl(manager.getMmsUAProfUrl());
+			
+			// getNetworkCountryIso is unreliable by CDMA network, so skip that.
+			if (!(manager.getPhoneType() == manager.PHONE_TYPE_CDMA)) {
+				info.setNetworkCountryISO(manager.getNetworkCountryIso());
+				info.setNetworkOperator(manager.getNetworkOperator());
+				info.setNetworkOperatorname(manager.getNetworkOperatorName());
+			}
+			
+			info.setNetworkType(manager.getNetworkType());
+			info.setPhoneType(manager.getPhoneType());
+			info.setRoaming(manager.isNetworkRoaming());
+			info.setSIMcountryISO(manager.getSimCountryIso());
+			info.setSimOperator(manager.getSimOperator());
+			info.setSimOperatorName(manager.getSimOperatorName());
+			info.setSimSerialNumber(manager.getSimSerialNumber());
+			info.setSimState(manager.getSimState());
+			info.setSubscriberId(manager.getSubscriberId());
+			info.setVoiceMailAlphaTag(manager.getVoiceMailAlphaTag());
+			info.setVoiceMailNumber(manager.getVoiceMailNumber());
+
+			CellLocation cellLocation = manager.getCellLocation();
+			
+			if (cellLocation instanceof GsmCellLocation) {
+				AndroidCellLocationGsm cl = (AndroidCellLocationGsm) new AndroidCellLocationGsm ();
+				
+				cl.setCid(((GsmCellLocation) cellLocation).getCid());
+				cl.setLac(((GsmCellLocation) cellLocation).getLac());
+				// AIP level 9
+				// cl.setPsc(((GsmCellLocation) cellLocation).getPsc());
+
+				info.setCellLocation(cl);			
+
+			} else if (cellLocation instanceof CdmaCellLocation) {
+				AndroidCellLocationCdma cl = new AndroidCellLocationCdma ();
+				
+				cl.setBaseStationId(((CdmaCellLocation) cellLocation).getBaseStationId());
+				cl.setBaseStationLatitude(((CdmaCellLocation) cellLocation).getBaseStationLatitude());
+				cl.setBaseStationLongitude(((CdmaCellLocation) cellLocation).getBaseStationLongitude());
+				cl.setNetworkId(((CdmaCellLocation) cellLocation).getNetworkId());
+				cl.setSystemId(((CdmaCellLocation) cellLocation).getSystemId());
+
+				info.setCellLocation(cl);							
+			}
+
+			// Read all the cell info's in the device. it can be an CellInfoGSM, CellInfoCdma, CellInfoLTE or CellInfoWcdma
+			List<CellInfo> cellInfoList = manager.getAllCellInfo();
+			
+			// Loop through all the CellInfo's
+			for (CellInfo cellInfo : cellInfoList) {
+				if (cellInfo instanceof CellInfoGsm) {
+					//GSM Cell Info
+					AndroidCellInfoGsm c = new AndroidCellInfoGsm ();
+					
+					// Fill in the AndroidCellInfoGsm class
+					c.setTimeStamp(cellInfo.getTimeStamp());
+					c.setIsRegisterd(cellInfo.isRegistered());
+					c.setCid(((CellInfoGsm) cellInfo).getCellIdentity().getCid());
+					c.setLac(((CellInfoGsm) cellInfo).getCellIdentity().getLac());
+					c.setMcc(((CellInfoGsm) cellInfo).getCellIdentity().getMcc());
+					c.setMnc(((CellInfoGsm) cellInfo).getCellIdentity().getMnc());
+					
+					// PSC is deprecated by Java Android and undefined by GSM
+//					c.setPsc(((CellInfoGsm) cellInfo).getCellIdentity().getPsc());
+
+					c.setAsuLevel(((CellInfoGsm) cellInfo).getCellSignalStrength().getAsuLevel());
+					c.setDmb(((CellInfoGsm) cellInfo).getCellSignalStrength().getDbm());
+					c.setSignalLevel(((CellInfoGsm) cellInfo).getCellSignalStrength().getLevel());
+
+					// Add the AndroidCellInfoGsm to the CellInfo list in RemoteNetworkInfo.
+					info.addCellInfo(c);
+					
+					
+				} else if (cellInfo instanceof CellInfoCdma) {
+					// Cdma Cell Info				
+					AndroidCellInfoCdma c = new AndroidCellInfoCdma ();
+					
+					// Fill in the AndroidCellInfoCdma class
+					c.setTimeStamp(cellInfo.getTimeStamp());
+					c.setIsRegisterd(cellInfo.isRegistered());
+					c.setBaseStationId(((CellInfoCdma) cellInfo).getCellIdentity().getBasestationId());
+					c.setLatitude(((CellInfoCdma) cellInfo).getCellIdentity().getLatitude());
+					c.setLongitude(((CellInfoCdma) cellInfo).getCellIdentity().getLongitude());
+					c.setNetworkId(((CellInfoCdma) cellInfo).getCellIdentity().getNetworkId());
+					c.setSystemId(((CellInfoCdma) cellInfo).getCellIdentity().getSystemId());
+					c.setAsuLevel(((CellInfoCdma) cellInfo).getCellSignalStrength().getAsuLevel());
+					c.setCdmaDbm(((CellInfoCdma) cellInfo).getCellSignalStrength().getCdmaDbm());
+					c.setCdmaEcio(((CellInfoCdma) cellInfo).getCellSignalStrength().getCdmaEcio());
+					c.setCdmaLevel(((CellInfoCdma) cellInfo).getCellSignalStrength().getCdmaLevel());
+					c.setDbm(((CellInfoCdma) cellInfo).getCellSignalStrength().getDbm());
+					c.setEvdoDbm(((CellInfoCdma) cellInfo).getCellSignalStrength().getEvdoDbm());
+					c.setEvdoEcio(((CellInfoCdma) cellInfo).getCellSignalStrength().getEvdoEcio());
+					c.setEvdoLevel(((CellInfoCdma) cellInfo).getCellSignalStrength().getEvdoLevel());
+					c.setEvdoSnr(((CellInfoCdma) cellInfo).getCellSignalStrength().getEvdoSnr());
+					c.setSignalLevel(((CellInfoCdma) cellInfo).getCellSignalStrength().getLevel());
+					
+					// Add the AndroidCellInfoCdma to the CellInfo list in RemoteNetworkInfo.
+					info.addCellInfo(c);
+					
+				} else if (cellInfo instanceof CellInfoLte) {
+					// LTE cell info
+					AndroidCellInfoLte c = new AndroidCellInfoLte ();
+
+					// Fill in the AndroidCellInfoLte class
+					c.setTimeStamp(cellInfo.getTimeStamp());
+					c.setIsRegisterd(cellInfo.isRegistered());
+					c.setCi(((CellInfoLte) cellInfo).getCellIdentity().getCi());
+					c.setMcc(((CellInfoLte) cellInfo).getCellIdentity().getMcc());
+					c.setMnc(((CellInfoLte) cellInfo).getCellIdentity().getMnc());
+					c.setPci(((CellInfoLte) cellInfo).getCellIdentity().getPci());
+					c.setTac(((CellInfoLte) cellInfo).getCellIdentity().getTac());
+					c.setAsuLevel(((CellInfoLte) cellInfo).getCellSignalStrength().getAsuLevel());
+					c.setDmb(((CellInfoLte) cellInfo).getCellSignalStrength().getDbm());
+					c.setSignalLevel(((CellInfoLte) cellInfo).getCellSignalStrength().getLevel());
+					c.setTimingAdvance(((CellInfoLte) cellInfo).getCellSignalStrength().getTimingAdvance());
+					
+					// Add the AndroidCellInfoLte to the CellInfo list in RemoteNetworkInfo
+					info.addCellInfo(c);
+					
+				} else if (cellInfo instanceof CellInfoWcdma) {
+					// Wcdma cell info
+					AndroidCellInfoWcdma c = new AndroidCellInfoWcdma ();
+					
+					c.setTimeStamp(cellInfo.getTimeStamp());
+					c.setIsRegisterd(cellInfo.isRegistered());
+					c.setCid(((CellInfoWcdma) cellInfo).getCellIdentity().getCid());
+					c.setLac(((CellInfoWcdma) cellInfo).getCellIdentity().getLac());
+					c.setMcc(((CellInfoWcdma) cellInfo).getCellIdentity().getMcc());
+					c.setMnc(((CellInfoWcdma) cellInfo).getCellIdentity().getMnc());
+					c.setPsc(((CellInfoWcdma) cellInfo).getCellIdentity().getPsc());
+					c.setAsuLevel(((CellInfoWcdma) cellInfo).getCellSignalStrength().getAsuLevel());
+					c.setDmb(((CellInfoWcdma) cellInfo).getCellSignalStrength().getDbm());
+					c.setSignalLevel(((CellInfoWcdma) cellInfo).getCellSignalStrength().getLevel());
+					
+					// Add the AndroidCellInfoWcdma to the CellInfo list in RemoteNetworkInfo
+					info.addCellInfo(c);
+				}
+			} // for loop
+			
+			// Read all the Neighboring cell info's in the device. it can be an CellInfoGSM, CellInfoCdma, CellInfoLTE or CellInfoWcdma
+			List<NeighboringCellInfo> neighboringCellInfoList = manager.getNeighboringCellInfo();
+
+			for (NeighboringCellInfo cellInfo: neighboringCellInfoList) {
+				AndroidNeighboringCellInfo c = new AndroidNeighboringCellInfo ();
+				
+				c.setCid(cellInfo.getCid());
+				c.setLac(cellInfo.getLac());
+				c.setNetworkType(cellInfo.getNetworkType());
+				c.setPsc(cellInfo.getPsc());
+				c.setRssi(cellInfo.getRssi());
+				
+				// add the AndroidNeighboringCellInfo to the Neighboring CellInfo list in RemoteNetworkInfo
+				info.addNeighboringCellInfo(c);
+			}
+			
+			
 			//TODO: manifest permissions, otherwise it don't work.
 		
 		return info;
+	}
+	
+	private void activateCallListener () {
+		
+	
+		
+		// Initialize the object that holds the information when the call action is invoked.
+		callInfo = new RemoteCallInfo ();
+		
+		// Sets the present date and time to the starting call date/time.
+		callInfo.setCallDate(new Date());
+		
+		// sets the Idle date and time to the present date/time.
+		callInfo.setIdleDate(new Date());
+		
+		manager = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
+		
+		listener = new PhoneStateListener () {
+			
+			public void onCallStateChanged (int state, String incomingNumber) {
+
+				// Pointer to the present date and time.
+				Date presentDate;
+		
+				switch (state) {
+				case TelephonyManager.CALL_STATE_IDLE:
+					// the present date /time.
+					presentDate = new Date ();
+
+					if (callInfo.getTimeout() <= (presentDate.getTime() - callInfo.getCallDate().getTime())) {
+						// a timeout was occurred
+						callInfo.isEndedByTimeout(true);
+					}
+					
+					// The phone was ended OR the phone was ended by a timeout.
+					callInfo.isEnded(true);
+					
+					if (callInfo.getIsOffHooked() == true) {
+						// The phone was answered and then ended
+						
+						// The time in seconds from the offHook status until Idle status.
+						callInfo.setOffHookTime((int) (presentDate.getTime() - callInfo.getOffHookDate().getTime() / 1000));			
+					} else {
+						if (callInfo.getIsRinged() == true) {
+							callInfo.setRingedTime((int) (presentDate.getTime () - callInfo.getRingingDate().getTime() / 1000));
+						} else {
+							// The phone call was not ringed and not answered (off hook).
+						}
+					}
+					break;
+				case TelephonyManager.CALL_STATE_RINGING:
+					// waiting for a connection.
+					presentDate = new Date ();
+					
+					callInfo.IsRinged(true);
+					callInfo.setRingingDate(presentDate);
+					callInfo.setIdleTime((int) (presentDate.getTime() - callInfo.getIdleDate().getTime() / 1000));
+					
+					// Sets the phone number of the called UE.
+					callInfo.setCalledMsisdn(incomingNumber);
+					
+					break;
+				case TelephonyManager.CALL_STATE_OFFHOOK:
+					presentDate = new Date ();
+
+					// The called phone has answered the call.
+					callInfo.isOffHooked(true);
+					callInfo.setOffHookDate(presentDate);
+					
+					if (callInfo.getIsRinged() == true) {
+						callInfo.setRingedTime((int) (presentDate.getTime() - callInfo.getRingedTime() / 1000));						
+					}
+					
+					break;
+				}
+			}
+		};
+		// Activates the Phone listener.
+		manager.listen(listener, PhoneStateListener.LISTEN_CALL_STATE);	
+
+	}
+	
+	private void stopPhoneStateListener () {
+		// Stops listening to changed call states.
+		manager.listen(listener, PhoneStateListener.LISTEN_NONE);
+
+		// sets the callInfo data in the results
+		actionRunner.getResults().setActionInfo(callInfo);
 	}
 }

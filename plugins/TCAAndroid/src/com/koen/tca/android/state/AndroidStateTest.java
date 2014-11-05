@@ -66,6 +66,14 @@ public class AndroidStateTest extends AbstractAndroidState {
 	}
 
 	/**
+	 * Wake ups the Test Thread state after a wait (timeout).
+	 * This is happening when the test thread is waiting for the answeringTime timeout.
+	 */
+	public void wakeupState () {
+		threadTest.wakeupThread();
+	}
+	
+	/**
 	 * Override the default toString method to return "Test"
 	 * @return the String message.
 	 */

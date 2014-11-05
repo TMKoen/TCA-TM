@@ -6,6 +6,7 @@ import java.util.Map;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.view.KeyEvent;
@@ -21,7 +22,7 @@ public class ActionINCOMINGCALL implements ITestAction  {
 	
 
 	@Override
-	public void startTest() {
+	public void startTest(Handler mainActivityHandler) {
 
 		PhoneStateListener listener = null;
 		TelephonyManager manager = null;
