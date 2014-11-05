@@ -45,19 +45,17 @@ public class TestServer extends java.rmi.server.UnicastRemoteObject implements
 	// the call back pointer to the client RMI- computer
 	// (the class that called one of the methods of TestServer).
 	ICallBackClient callBackClient;
-	
-	// the in-memory parameters from the serverinit.ini file
-	private Map<String, String> initParams;
 			
 	// The initializing file
-	private final String INITFILE = "serverinit.ini";
+	// TODO: hard coded. so change it.
+	private final String INITFILE = "c:/serverinit.ini";
 	
-	// If the serverinit.ini file can't be read, then this is the default path to the testSets.
-	private final String DEFAULTTESTPATH = "c:/testscript/";
+	// Singleton object that holds all the parameters from the .ini file
+	private InitParameters initParameters = InitParameters.SINGLETON();
 	
-	// The directory where the scripts are stored.
-	// It is read from the serverinit.ini file but if that file is not present, then use this default value.
-	private String testPath = DEFAULTTESTPATH;
+
+	@SuppressWarnings("unused")
+	private boolean isDefaultInitParameters = false;
 	
 	// Handles all the States for the server.
 	@Inject
@@ -76,49 +74,10 @@ public class TestServer extends java.rmi.server.UnicastRemoteObject implements
 	public TestServer() throws RemoteException {
 		super();
 
-		// Initialize the map that holds the parameters from the serverinit.ini file
-		initParams = new HashMap<String, String>();
-		
-		// Try reading the serverinit.ini file.
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(INITFILE));
-
-			String key, value;
-			String line;
-			
-			// loop through all the lines in the serverinit.ini file.
-			while ((line = br.readLine()) != null) {
-				
-				// removes the lines that begins with: //
-				if (!line.matches("^//")) {
-					
-					// any valid line must have a ':' between the key and the value. If not? skip that line.
-					if ((line.indexOf(':')) != -1) {
-						
-						// key is the text before the ':'.
-						key = line.substring(0, line.indexOf(':'));
-						
-						// value is the text after the ':' without whites paces at the beginning of the substring.
-						value = (line.substring(line.indexOf(':')+ 1)).replaceAll("^\\s+","");
-						
-						// saves the key/value pair.
-						initParams.put(key, value);
-					}
-				}
-			}
-			br.close();
-			
-		} catch (FileNotFoundException e) {
-			// no serverini.ini file, so use default directory
-			// so testPath = DEFAULTTESTPATH
-		} catch (IOException e) {
-			
-		}
-
-		// sets the testPath to the parameter from the serverinit.ini file
-		if (initParams.get("path") != null)
-				testPath = initParams.get("path");
-		
+		// reads all the .ini parameters and store it in memory.
+		// PS: if the .ini file has no valid parameters or the file can't be read, 
+		// then the default parameters are used. de return value is true if there ARE some parameters found
+		isDefaultInitParameters = !initParameters.initialize(INITFILE);
 		
 	}
 
@@ -239,7 +198,7 @@ public class TestServer extends java.rmi.server.UnicastRemoteObject implements
 		setCallBackClient (callBackClient);
 		
 		// Set the test parameters: the testSet to by tested.
-		stateMachine.setTestParams(testPath + testSet, null);
+		stateMachine.setTestParams(initParameters.getTestSetPath() + testSet, null);
 		
 		stateMachine.changeState(ServerEvents.START_TEST);
 		// stateMachine.activateState();
@@ -254,7 +213,7 @@ public class TestServer extends java.rmi.server.UnicastRemoteObject implements
 		setCallBackClient (callBackClient);
 		
 		// Set the test parameters: the testSet and all the TestCases.
-		stateMachine.setTestParams(testPath + testSet, testCases);
+		stateMachine.setTestParams(initParameters.getTestSetPath() + testSet, testCases);
 		
 		stateMachine.changeState(ServerEvents.START_TEST);
 
