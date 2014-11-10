@@ -137,9 +137,6 @@ public class AndroidDetector extends RemoteUserEquipment {
 					remoteMsg = remoteMessageTransmitter.receiveMessage(
 							clientSocket, readTimeout);
 
-					System.out
-							.println("Server has received a message from the Android");
-
 					// check if the message was send. If there was an exception
 					// or timeout, then remoteMsg must be null.
 					if (remoteMsg != null && remoteMsg instanceof ExposeMessage) {
@@ -148,8 +145,6 @@ public class AndroidDetector extends RemoteUserEquipment {
 						storeDeviceInfo(((ExposeMessage) remoteMsg).getImei(),
 								((ExposeMessage) remoteMsg).getNumber(),
 								clientSocket.getInetAddress().getHostAddress());
-
-
 
 						
 						// Initialize the ObjectOutputStream.
@@ -162,9 +157,6 @@ public class AndroidDetector extends RemoteUserEquipment {
 								.sendMessage(new ChangeStateMessage(
 										AndroidEvents.STOP_EXPOSE));
 
-						System.out
-								.println("Server has send a ChangeState message");
-
 						// receive an Acknowledge message from the Android
 						// device, so that the server
 						// knows that the android device closed the connection
@@ -174,8 +166,7 @@ public class AndroidDetector extends RemoteUserEquipment {
 
 						if (remoteMsg != null
 								&& remoteMsg instanceof AcknowledgeMessage) {
-							System.out
-									.println("Server has received a Acknowledge message from the Android");
+
 							// close the Inputstream, OutputStream and the
 							// clientSocket.
 							remoteMessageTransmitter.closeInputStream();
@@ -205,9 +196,6 @@ public class AndroidDetector extends RemoteUserEquipment {
 					} else {
 						// Wrong message send by the Android device.It must be
 						// an ExposeMessage.
-						System.out
-								.println("Error: Android device must send a Expose message");
-
 						/**
 						 * because the Android device don't send am Expose
 						 * message, it is not clear in which state the Android
@@ -222,8 +210,7 @@ public class AndroidDetector extends RemoteUserEquipment {
 						if (!clientSocket.isClosed()) {
 							clientSocket.close();
 						}
-						System.out
-								.println("Connection to the Android device is closed (no referenc is stored).");
+
 					}
 
 				} catch (SocketException e) {

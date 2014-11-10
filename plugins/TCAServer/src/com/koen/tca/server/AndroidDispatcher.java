@@ -4,283 +4,193 @@ package com.koen.tca.server;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.emf.common.util.EList;
-
 import com.koen.tca.common.message.RemoteAction;
 import com.koen.tca.common.message.RemoteUe;
-import com.koen.tca.server.state.DetectResult;
+import com.koen.tca.server.internal.TCAServerActivator;
 import com.netxforge.netxtest.dragonX.Action;
-import com.netxforge.netxtest.dragonX.ParamType;
 import com.netxforge.netxtest.dragonX.Parameter;
 import com.netxforge.netxtest.dragonX.UE;
 import com.netxforge.netxtest.dragonX.UEMetaObject;
-import com.netxforge.netxtest.dragonX.impl.ParamTypeImpl;
-import com.netxforge.netxtest.dragonX.impl.UEImpl;
+import com.netxforge.netxtest.dragonX.UEPARAMS;
 
 /**
  * A dispatcher which deals with DragonX Test actions.
+ * DragonXInvoker loops through all the scripts that must be tested. All the actions in those scripts, 
+ * are processed and executed in this class.
+ * Every Action is going to be run in an own Job thread, so they can be parallel executed.
+ * If one UE is already testing, then this class is waiting until that working job thread is finished.
+ * 
+ * @Version 1.0
+ * @author Koen Nijmeijer
  */
 public class AndroidDispatcher extends AbstractDispatcher {
 
-	// The port number of the Android devices. With this port, the server connects to the Android devices.
 
 	// a list of all the job names that are active.
 	private List<String> jobs = null;
 
-	// An action which is executed remotely.
-	private RemoteAction remoteAction = null;
-
-	
-	public RemoteAction getRemoteAction() {
-		return remoteAction;
-	}
-
-	public void setRemoteAction(RemoteAction remoteAction) {
-		this.remoteAction = remoteAction;
-	}
-
-	
 
 	/**
+	 * Process a new action. the action name is stored in a new RemoteAction object.
+	 * @version 1.0
 	 * @author Koen Nijmeijer
+	 * @param action the Action that must be processed.
 	 */
-	/*
-	private final class RemoteMessageJob extends Job {
-		private RemoteMessageJob(String name) {
-			super(name);
-		}
-
-		@Override
-		protected IStatus run(IProgressMonitor monitor) {
-			// Make connection with the Android Device
-
-			// Initialize OK status for returning.
-			IStatus status = Status.OK_STATUS;
-			
-			RemoteMessageTransmitter messageTransmitter = new RemoteMessageTransmitter();
-			try {
-				String t = AndroidDispatcher.this.getIpAddress();
-				
-//				InetSocketAddress serverAddress = new InetSocketAddress(
-//						getIpAddress(), portNumber);
-
-				DetectResult detectResult = DetectResult.SINGLETON();
-				
-				List<UEInfo> ueList = detectResult.getValidUEList();
-				UEInfo ue =  ueList.get(0);
-				
-				String ip = ue.getIPAddress();
-				
-				InetSocketAddress serverAddress = new InetSocketAddress (
-						"192.168.178.55", portNumber);
-				
-				// Open the Socket connection
-				clientSocket = new Socket();
-				clientSocket.connect(serverAddress, socketTimeout);
-
-				// initialize the output stream
-				messageTransmitter.setOutputStream(clientSocket
-						.getOutputStream());
-				
-				// Initialize the input stream
-				messageTransmitter.setInputStream(clientSocket.getInputStream());
-
-				// Send a Action message to the Android device.
-				messageTransmitter.sendMessage(new ActionMessage(remoteAction));
-
-				// gets the Acknowledge message.
-				IMessage remoteMsg = messageTransmitter.receiveMessage(clientSocket, receiveMsgTimeout);
-				
-				if (remoteMsg != null && remoteMsg instanceof AcknowledgeMessage) {
-					if (((AcknowledgeMessage)remoteMsg).getAckMessage().equals("No valid Remote Action!")) {
-						// The remote action is not valid
-						// return a error status.
-						status = Status.CANCEL_STATUS;
-						
-					} else if  (((AcknowledgeMessage)remoteMsg).getAckMessage().equals("Remote action is ok!")) {
-						// Send a ChangeState message to the Android device.
-						messageTransmitter.sendMessage(new ChangeStateMessage(
-								AndroidEvents.START_TEST));		
-					}
-				}
-				
-			} catch (IOException e) {
-				System.out.println("IOException.. no connection made!");
-				e.printStackTrace();
-			} finally {
-				messageTransmitter.closeOutputStream();
-				messageTransmitter.closeInputStream();
-
-				if (clientSocket != null) {
-					try {
-						clientSocket.close();
-
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			} // end of finally
-			return status;
-		} // method run (..)
-	}
-
-*/
-	
 	@Override
 	public void processAction(Action action) {
 		super.processAction(action);
 		
 		if (action.getActionCode() != null) {
+
 			// A new action so clear the old RemoteAction and make a new one.
-			remoteAction = new RemoteAction(getActionName());
-		} else if (action.getParameterSet() != null) {
+			// Google dependency injection makes a new RemoteAction object
+//			Class<RemoteAction> remoteActionClass = RemoteAction.class;
+//			setRemoteAction (TCAServerActivator.getInstance()
+//					.getInjector().getInstance(remoteActionClass));		
+			setRemoteAction(new RemoteAction(getActionName()));
 			
+			// Store the action name in the remoteAction.
+			getRemoteAction().setActionName(action.getActionCode().toString());			
 		}
 		
-//		EList<Parameter> e = action.getParameterSet();
-//		for (Parameter p: e) {
-//			if (p.getName().toString() == "from") {
-//		 		setImeiNumber(p.toString());
-//			}
-//		}
 				
 	}
 
+	/**
+	 * Process one parameter for the present action. The parameter is stored in the remoteAction.
+	 * Because an action can rely on an UE (for example: 'from: UE1' or 'to: UE2'), this method also 
+	 * stores the referenced UE information in the remoteAction.
+	 * @version 1.0
+	 * @author Koen Nijmeijer
+	 * @param the Parameter that must be stored in the remoteAction
+	 */
 	@Override
 	public void processParameter(Parameter p) {
-
-		// Gets the list for the parameters
 		super.processParameter(p);
 
-		if (remoteAction != null) {
-			if (p.getName().toString().equals("From") ) {
-				// Get the IP address of the UE that handles the Action.
+	
+		if (getRemoteAction() != null) {
+		
+			if (p.getName().toString().equalsIgnoreCase("from") || p.getName().toString().equalsIgnoreCase("To") ) {
+				if (p.getType().getUeRef() != null) {
+					// From and TO must have a reverence to an UE
+					
+					// Store the parameter in remoteAction
+					getRemoteAction().getMap().put(p.getName().toString(), p.getType().getUeRef().getName());
 
-				
-				UEImpl ue = null;
-				
-				ParamType pt = (ParamTypeImpl) p.getType();
-				
-				if (p.getType().getUeRef() != null) 
-					ue = (UEImpl) p.getType().getUeRef();
-				
-				if (ue != null) {
-					EList<UEMetaObject> eList = ue.getMeta();
-				
-					for (UEMetaObject e : eList) {
-						if (e.getParams().toString().equals("MSISDN") ) {
-							remoteAction.getMap().put(p.getName().toString(), e.getParamValue().toString());
-							break;
-						} else if (e.getParams().toString().equals("IMEI")) {
-						
+					RemoteUe ue = new RemoteUe();
+					ue.setName(p.getType().getUeRef().getName());
+					
+					// loop to the meta data of the UE
+					for (UEMetaObject obj: p.getType().getUeRef().getMeta()) {
+						if (obj.getParams() == UEPARAMS.IMEI) {
+							ue.setImei(obj.getParamValue());														
+						} else if (obj.getParams() == UEPARAMS.MSISDN) {
+							ue.setMsisdn(obj.getParamValue());
 						}
 					}
-				
+					// Store the UE into the UeMapin of the remoteAction. If there is already an UE with the same name, 
+					// than it is automatically skipped. (there can be only one object name in the same Map).
+					getRemoteAction().getUeMap().put(p.getType().getUeRef().getName(), ue);
 				}
-
-			}
-			
-			
-			
-		}
-		
-//		if (p.eIsSet(DragonXPackage.Literals.PARAMETER__TYPE)) {
-//			System.out.println(" parameter: " + p.getName() + " value:"
-//					+ p.getType());
-//			remoteAction.getMap().put(getCurrentParameter(), p.getType().toString());
-//		}
+			} else if (p.getName().toString().equalsIgnoreCase("Duration") ||
+					p.getName().toString().equalsIgnoreCase("ResponseTime") ||
+					p.getName().toString().equalsIgnoreCase("ServiceDelay") ||
+					p.getName().toString().equalsIgnoreCase("OffsetStart") ||
+					p.getName().toString().equalsIgnoreCase("OffsetEnd") ||
+					p.getName().toString().equalsIgnoreCase("P1") ||
+					p.getName().toString().equalsIgnoreCase("P2") ||
+					p.getName().toString().equalsIgnoreCase("P3") ||
+					p.getName().toString().equalsIgnoreCase("P4") ||
+					p.getName().toString().equalsIgnoreCase("P5") ||
+					p.getName().toString().equalsIgnoreCase("P6")) {
+				
+				// Store the parameter in remoteAction
+				getRemoteAction().getMap().put(p.getName().toString(), String.valueOf(p.getType().getValue()));
+					
+			} else if (p.getName().toString().equalsIgnoreCase("Response")) {
+				if (p.getType().getResponse() != null) {
+					getRemoteAction().getMap().put (p.getName().toString(), p.getType().getResponse().toString());
+				}
+			} else if (p.getName().toString().equalsIgnoreCase("SMSDirection")) {
+				if (p.getType().getSmsDirection() != null) {
+					getRemoteAction().getMap().put (p.getName().toString(), p.getType().getSmsDirection().toString());
+				}
+			} else if (p.getName().toString().equalsIgnoreCase("UssdCode")) {
+				if (p.getType().getUssdCode() != null) {
+					getRemoteAction().getMap().put (p.getName().toString(), p.getType().getUssdCode().toString());
+				}
+			} else if (p.getName().toString().equalsIgnoreCase("MixerOption")) {
+				if (p.getType().getMixerOption() != null) {
+					getRemoteAction().getMap().put (p.getName().toString(), p.getType().getMixerOption().toString());
+				} else if (p.getName().toString().equalsIgnoreCase("Data")) {
+					getRemoteAction().getMap().put (p.getName().toString(), p.getType().getMessage());
+				}	
+			}	
+		} 
 	}
 
+	/**
+	 * Process the UE parameters
+	 * @version 1.0
+	 * @author Koen Nijmeijer
+	 * @param the UE parameter
+	 */
 	@Override
 	public void processUE(UE ue) {
 		super.processUE(ue);
 
-		RemoteUe remoteUe = new RemoteUe ();
-		
-		if (remoteAction != null) {
-			remoteUe.setName(ue.getName());
-
-			EList<UEMetaObject> eList = ue.getMeta();
-			
-			for (UEMetaObject e : eList) {
-				
-			}
-			
-			// Put the UE in the remoteAction UE map.
-			remoteAction.getUeMap().put (ue.getName().toString(), remoteUe);
-		}
-		
+		// not used. the process of the UE is handled in the processParameter method
 
 	}
 
-	/**
-	 * Dispatch our {@link RemoteMessageJob}
-	 */
-//	private void dispatchJob() {
-//		Job job = new RemoteMessageJob("ue-" + getImeiNumber()); // new
-		// Job
-		// sets the priority of the job and start as soon as
-		// possible (scheduled).
-//		job.setPriority(Job.SHORT);
-//		job.schedule();
-//	}
 
+	/**
+	 * Execute the action that is stored in remoteAction.
+	 * @version 1.0
+	 * @author Koen Nijmeijer
+	 */
 	@Override
 	public void execute() {
 		
 		super.execute(); // Match the UE with a detected UE. 
-		
-		// Clone the UE Parameters, TODO we assume a single Parameter.
-		// Otherwise create a map of Parameters in the parent, and populate the
-		// remoteUe for each of the entries
-		// in the map.
-/*
-		
-		remoteAction.getUeMap().get(this.getCurrentParameter())
-				.setImei(this.getImeiNumber());
-		remoteAction.getUeMap().get(this.getCurrentParameter())
-				.setMsisdn(this.getMsisdn());
-		remoteAction.getUeMap().get(this.getCurrentParameter())
-				.setName(this.getUeName());
-*/
-		
-		// get the IP address of the UE.
-		DetectResult detectResult = DetectResult.SINGLETON();
-		List<UEInfo> ueList = detectResult.getValidUEList();
-		UEInfo ue =  ueList.get(0);
-		
-		String ip = ue.getIPAddress();
 
+		if (getIpAddress() != null) {
 		
-		if (jobs == null) {
-			jobs = new ArrayList<String>();
-		}
-
-		// give the new Job a name: 'UE<imei number>'
-		String jobName = "UE"+ue.getImei();
-
-		while (jobList(jobName, JOBLISTACTION.READ) == true) {
-			// wait until the job is stopped. For one UE, there can be only one connection (one action at a time),
-			// so the next action must wait for the previous action to finished.
-			try {
-				wait(1000);
-			} catch (InterruptedException e) {
+			if (jobs == null) {
+				jobs = new ArrayList<String>();
 			}
-		}
+	
+			// give the new Job a name: 'UE<imei number>'
+			String jobName = "UE"+ getSourceImei();
 
-		if (jobList (jobName, JOBLISTACTION.READ) == false) {
-			// the name of the job is not in the list anymore.
-			
-			// add the new Job name in the list
-			jobList (jobName, JOBLISTACTION.ADD);
-			
-			AndroidConnectionJob job =  new AndroidConnectionJob(this);
-			
-			// start the new job.
-			job.dispatchJob ("name", ip, remoteAction);
-			
-		} else {
-			// timeout was occurred.
+			// When the UE is dead, then this deadUETimer prevents that the server stays in a loop.
+			int deadUETimer = 300;
+			while (jobList(jobName, JOBLISTACTION.READ) == true && deadUETimer >=0 ) {
+				// wait until the job is stopped. For one UE, there can be only one connection (one action at a time),
+				// so the next action must wait for the previous action to finished.
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+				}
+			}
+	
+			if (jobList (jobName, JOBLISTACTION.READ) == false) {
+				// the name of the job is not in the list anymore.
+				
+				// add the new Job name in the list
+				jobList (jobName, JOBLISTACTION.ADD);
+				
+				AndroidConnectionJob job =  new AndroidConnectionJob(this);
+				
+				// start the new job.
+				job.dispatchJob (jobName, getIpAddress(), getRemoteAction());
+				
+			} else {
+				// timeout was occurred.
+				// remove the Job from the list.
+				jobList (jobName, JOBLISTACTION.REMOVE);
+			}
 		}
 		
 	}
@@ -288,7 +198,6 @@ public class AndroidDispatcher extends AbstractDispatcher {
 	/**
 	 * Remove or add the name of a Job to the list of Job names.
 	 * It it Thread safe. There can be only one call simultaneously  that change the list.
-	 * @param name
 	 * @version 1.0
 	 * @author Koen Nijmeijer
 	 * @param name the name of the job to add / remove to/from the list

@@ -1,10 +1,5 @@
 package com.koen.tca.server;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -13,15 +8,11 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.google.inject.Inject;
 import com.koen.tca.server.state.DetectResult;
 import com.koen.tca.server.state.ServerEvents;
 import com.koen.tca.server.state.ServerStateIdle;
 import com.koen.tca.server.state.ServerStateMachine;
-import com.koen.tca.server.state.ServerStateTest;
 
 /**
  * 'TestServer' is the main class that handles all the necessary actions The RMI

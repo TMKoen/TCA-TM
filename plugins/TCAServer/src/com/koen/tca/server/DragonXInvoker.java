@@ -12,7 +12,13 @@ import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.CancelIndicator;
 
 import com.google.inject.Inject;
+import com.netxforge.netxtest.dragonX.Action;
 import com.netxforge.netxtest.dragonX.DragonX;
+import com.netxforge.netxtest.dragonX.Parameter;
+import com.netxforge.netxtest.dragonX.TestCase;
+import com.netxforge.netxtest.dragonX.UE;
+import com.netxforge.netxtest.dragonX.UEMetaObject;
+import com.netxforge.netxtest.dragonX.UEPARAMS;
 import com.netxforge.netxtest.interpreter.DragonXInterpreter;
 import com.netxforge.netxtest.interpreter.IExternalDispatcher;
 
@@ -157,12 +163,63 @@ public class DragonXInvoker implements Runnable {
 				if (!scriptAsResource.getContents().isEmpty()) {
 
 					EList<EObject> contents = scriptAsResource.getContents();
+
 					if (contents.size() == 1) {
 						EObject script = contents.get(0);
-
 						if (script instanceof DragonX) {
+
+							// For testing the script:
+							
+							for (TestCase t : ((DragonX) script).getTests()) {
+								System.out.println("\ntestcase: " + t.getName());
+								System.out.println("     Description: " + t.getDescription());
+
+								System.out.println("     Actions:");
+								System.out.println("     ========");
+								for (Action a : t.getProcedure().getActions()) {
+									System.out.println("          ActionCode: " + a.getActionCode().toString());
+									System.out.println("          Parameters:");
+									System.out.println("          ===========");
+									for (Parameter p: a.getParameterSet()) {
+										System.out.println("               ParameterName: " + p.getName());
+										if (p.getType() != null) {
+											if (p.getType().getUeRef() != null) {
+												for (UEMetaObject ue: p.getType().getUeRef().getMeta()) {
+													if (ue.getParams() == UEPARAMS.MSISDN) {
+														System.out.println("          UE: " + ue.getParamValue() );														
+													}
+												}
+
+											} else if (p.getType().getValue() != 0) {
+												System.out.println("          Value: " + p.getType().getValue());
+											} else if (p.getType().getResponse() != null) {
+												System.out.println("          response: " + p.getType().getResponse().toString());												
+											}
+
+										}
+
+									}
+								}								
+							}
+							
+							for (UE ue: ((DragonX) script).getUes()) {
+								System.out.println("\nUE: " + ue.getName());
+								for (UEMetaObject m : ue.getMeta()) {
+										System.out.println("     Description: " + m.getDescription());
+									if (m.getParams() != null) {
+										if (m.getParams() == UEPARAMS.IMEI) {
+											System.out.println("     IMEI: " + m.getParamValue());
+										} else if (m.getParams() == UEPARAMS.MSISDN) {
+											System.out.println("     MSISDN: " + m.getParamValue());
+										}
+									}
+								}
+							}
+							// End of testing the script.
+											
 							
 							interpreter.evaluate((DragonX) script);
+							// TODO: stop temperately until all the action from the last script are finished.
 						} else {
 							// Invalid EMF Object.
 						}
