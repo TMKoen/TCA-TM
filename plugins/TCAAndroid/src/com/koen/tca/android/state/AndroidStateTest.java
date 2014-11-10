@@ -37,10 +37,10 @@ public class AndroidStateTest extends AbstractAndroidState {
 		IAndroidState state = this;
 		switch (androidEvent) {
 		case FINISHED:
-			getStateMachine().createState(AndroidStates.READY);
+			state = getStateMachine().createState(AndroidStates.READY);
 			break;
 		case STOP_TEST:
-			getStateMachine().createState(AndroidStates.IDLE);
+			state = getStateMachine().createState(AndroidStates.IDLE);
 			break;
 		default:
 			break;

@@ -14,7 +14,7 @@ import android.view.KeyEvent;
 import com.koen.tca.android.ActionRunner;
 import com.koen.tca.common.message.RemoteUe;
 
-public class ActionINCOMINGCALL implements ITestAction  {
+public class ActionANSWER implements ITestAction  {
 
 	private Map <String, String> parameters;
 	private Map <String, RemoteUe> ueParameters;

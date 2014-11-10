@@ -1,5 +1,6 @@
 package com.koen.tca.android;
 
+import java.util.Date;
 import java.util.Map;
 
 import android.content.Context;
@@ -21,6 +22,10 @@ import com.koen.tca.common.message.RemoteUe;
  */
 public class ActionRunner {
 
+	// Maximum time for the offset time to wait. This is set to 5 minutes.
+	// this variable is used by other Action classes.
+	public static final long MAX_WAIT_TIME_IN_MILLISECONDS = 1000 *60 *5;
+	
 	// pointer to itself, so other objects can use this to access this object.
 	private static ActionRunner self;
 
@@ -125,6 +130,37 @@ public class ActionRunner {
 			results = new RemoteResults(action.getClass().getName());
 			results.setAction(remoteAction);
 
+		
+			if (action.getParameters().get("OffsetStart") != null) {
+
+				// Gets the offset time in milliseconds that the thread must wait before the test must start.
+				long offsetInMilliseconds;
+				try {
+					offsetInMilliseconds = Integer.valueOf(action.getParameters().get("OffsetStart")) * 1000;
+				} catch (NumberFormatException e) {
+					// the OffsetStart parameter was not an integer.
+					offsetInMilliseconds = 0;
+				}
+				
+				
+				@SuppressWarnings("unused")
+				Date end = null;
+				Date start = new Date();
+
+				// Extra safety if the testcase action parameter is between zero and 5 minutes.
+				if (offsetInMilliseconds > 0 && offsetInMilliseconds <= MAX_WAIT_TIME_IN_MILLISECONDS) {
+					// Loops and sleep until the offset start time is ended.
+					while ( ((end = new Date()).getTime() - start.getTime()) < offsetInMilliseconds ) {
+						// wait 1 second
+						try {
+							Thread.sleep (1000);
+						} catch (InterruptedException e) {
+							// catch an interrupt from another thread
+						}
+					} 
+				}
+			}
+			
 			if (getContext () != null) {
 				// Store network info before the test.
 				results.setNetworkInfoBefore(((TcaMainActivity) getContext()).getNetworkInfo());				
@@ -137,6 +173,36 @@ public class ActionRunner {
 				// Store network info after the test.
 				results.setNetworkInfoAfter(((TcaMainActivity) getContext()).getNetworkInfo());				
 			}
+			
+			if (action.getParameters().get("OffsetEnd") != null) {
+
+				// Gets the offset time in milliseconds that the thread must wait before the test must end.
+				long offsetInMilliseconds;
+				try {
+					offsetInMilliseconds = Integer.valueOf(action.getParameters().get("OffsetEnd")) * 1000;
+				} catch (NumberFormatException e) {
+					// the OffsetStart parameter was not an integer.
+					offsetInMilliseconds = 0;
+				}
+				
+				@SuppressWarnings("unused")
+				Date end = null;
+				Date start = new Date();
+				
+				// Extra safety if the testcase action parameter is between zero and 5 minutes.
+				if (offsetInMilliseconds > 0 && offsetInMilliseconds <= MAX_WAIT_TIME_IN_MILLISECONDS) {
+					// Loops and sleep until the offset start time is ended.
+					while ( ((end = new Date()).getTime() - start.getTime()) < offsetInMilliseconds ) {
+						// wait 1 second
+						try {
+							Thread.sleep (1000);
+						} catch (InterruptedException e) {
+							// catch an interrupt from another thread
+						}
+					} 
+				}
+			}
+
 		}
 	}
 
@@ -151,5 +217,9 @@ public class ActionRunner {
 		return results;
 	}
 	
+	public synchronized void clean () {
+		this.action = null;
+		this.results = null;
+	}
 
 } // class ActionRunner

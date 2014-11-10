@@ -166,6 +166,7 @@ public class ThreadExpose implements IThreadState {
 					// An IO exception can occurred or a timeout while waiting on a message.
 					// No Acknowledge has to be send because of the IO exception or the timeout.
 					// the event = STOP_EXPOSE_NO_SERVER
+					
 				}
 	 								
 			} catch (UnknownHostException e) {
@@ -180,7 +181,7 @@ public class ThreadExpose implements IThreadState {
 				Log.e("clientSocket","The clientSocket has a connection problem");
 				
 			} catch (IOException e) {
-				Log.e("clientSocket","Some other clientSocker problem has arrise");
+				Log.e("clientSocket","Some other clientSocket problem has arrise");
 			} finally {
 				messageTransmitter.closeOutputStream();
 				messageTransmitter.closeInputStream();

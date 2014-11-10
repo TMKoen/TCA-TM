@@ -405,7 +405,7 @@ public class ThreadReady implements IThreadState {
 					// Checks if the Action name is valid.
 					for (ActionObjects a: ActionObjects.values()) {
 						// Checks if the name of the Action is a valid name that exists in the ActionObjects enum.
-						if (a.name().toLowerCase().equals("Action" +intentAction.getActionName().toLowerCase())) {
+						if (a.name().toLowerCase().equals("action" +intentAction.getActionName().toLowerCase())) {
 							isValidActionName = true;
 							break;
 						}
@@ -462,8 +462,11 @@ public class ThreadReady implements IThreadState {
 				if (remoteMsg != null && remoteMsg instanceof RequestResultsMessage) {
 					// The server asks for the results.
 					
-					// TODO: Fills this with the results.
-					RemoteResults remoteResults = new RemoteResults ("");
+					
+					ActionRunner actionRunner = ActionRunner.SINGLETON();
+					
+					// Get the results from the last test.
+					RemoteResults remoteResults = actionRunner.getResults();	
 					
 					// Send a ResultsMessage to the server.
 					messageTransmitter.sendMessage(new ResultsMessage (remoteResults));
@@ -473,7 +476,7 @@ public class ThreadReady implements IThreadState {
 					
 					if (remoteMsgAck instanceof AcknowledgeMessage) {
 						// the results are by the server know, so clean the old results.
-						//TODO: remoteResults.clear ()
+						actionRunner.clean();
 					}
 					// clears the Remote message.
 					remoteMsg = null;
