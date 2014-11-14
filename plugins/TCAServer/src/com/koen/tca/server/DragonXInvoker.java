@@ -31,6 +31,8 @@ import com.netxforge.netxtest.interpreter.IExternalDispatcher;
  */
 public class DragonXInvoker implements Runnable {
 
+	public static String PRESENT_SCRIPTNAME = null;
+	
 	@Inject
 	private IResourceFactory xResourceFactory;
 
@@ -181,19 +183,28 @@ public class DragonXInvoker implements Runnable {
 									System.out.println("          Parameters:");
 									System.out.println("          ===========");
 									for (Parameter p: a.getParameterSet()) {
-										System.out.println("               ParameterName: " + p.getName());
+										System.out.print("               Parameter: " + p.getName() + ": ");
 										if (p.getType() != null) {
-											if (p.getType().getUeRef() != null) {
+
+											if ((p.getName().toString().equals("From") || p.getName().toString().equals("To") | p.getName().toString().equals("Source")) 
+													&& p.getType().getUeRef() != null) {
+												
 												for (UEMetaObject ue: p.getType().getUeRef().getMeta()) {
 													if (ue.getParams() == UEPARAMS.MSISDN) {
-														System.out.println("          UE: " + ue.getParamValue() );														
+														System.out.println(ue.getParamValue() );														
 													}
-												}
-
+												}											
 											} else if (p.getType().getValue() != 0) {
-												System.out.println("          Value: " + p.getType().getValue());
-											} else if (p.getType().getResponse() != null) {
-												System.out.println("          response: " + p.getType().getResponse().toString());												
+												System.out.println(p.getType().getValue());
+											} else if (p.getName().toString().equals("Response") && p.getType().getResponse() != null) {
+												System.out.println(p.getType().getResponse().toString());
+											} else if (p.getName().toString().equals("Direction") && p.getType().getSmsDirection() != null) {
+												System.out.println(p.getType().getSmsDirection().toString());
+												
+											} else if ((p.getName().toString().equals("URL") || p.getName().toString().equals("Data")) && p.getType().getStringValue() != null) {
+												System.out.println(p.getType().getStringValue());
+											} else if (p.getName().toString().equals("DataAction") && p.getType().getDataAction() != null) {
+												System.out.println(p.getType().getDataAction().toString());
 											}
 
 										}
@@ -216,10 +227,21 @@ public class DragonXInvoker implements Runnable {
 								}
 							}
 							// End of testing the script.
-											
 							
+							String name = filesInDirectory[testsDone].getName();
+							
+							// store the present script name without '.dragonx'
+							setPresentScript ((name.lastIndexOf(".") != -1) ? name.substring(0, name.lastIndexOf(".")): name);
+
+							// evaluate the script and execute it.
 							interpreter.evaluate((DragonX) script);
-							// TODO: stop temperately until all the action from the last script are finished.
+
+							// sleep until all the actions from this script are finished.
+							// After that, the next script can begin.
+							while (AndroidDispatcher.NO_JOBS_BUSY != true) {
+								// sleep one second
+								Thread.sleep(1000);
+							}
 						} else {
 							// Invalid EMF Object.
 						}
@@ -240,6 +262,11 @@ public class DragonXInvoker implements Runnable {
 		
 	}
 
+	
+	private synchronized void setPresentScript (String name) {
+		PRESENT_SCRIPTNAME = name;
+	}
+	
 	public synchronized void startThread () {
 
 		// if there is another thread running, don't create a new thread

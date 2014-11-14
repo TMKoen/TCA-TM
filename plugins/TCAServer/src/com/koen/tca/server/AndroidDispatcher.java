@@ -29,6 +29,8 @@ public class AndroidDispatcher extends AbstractDispatcher {
 	// a list of all the job names that are active.
 	private List<String> jobs = null;
 
+	// if any job is busy for this test script, then this is false.
+	public static boolean NO_JOBS_BUSY = true;
 
 	/**
 	 * Process a new action. the action name is stored in a new RemoteAction object.
@@ -71,33 +73,37 @@ public class AndroidDispatcher extends AbstractDispatcher {
 	
 		if (getRemoteAction() != null) {
 		
-			if (p.getName().toString().equalsIgnoreCase("from") || p.getName().toString().equalsIgnoreCase("To") ) {
-				if (p.getType().getUeRef() != null) {
-					// From and TO must have a reverence to an UE
-					
-					// Store the parameter in remoteAction
-					getRemoteAction().getMap().put(p.getName().toString(), p.getType().getUeRef().getName());
+			if ((p.getName().toString().equalsIgnoreCase("From") || 
+				p.getName().toString().equalsIgnoreCase("To") ||
+				p.getName().toString().equalsIgnoreCase("Source")) && 
+				p.getType().getUeRef() != null ) {
+				// From, TO and Source must have a reverence to an UE
+				
+				// Store the parameter in remoteAction
+				getRemoteAction().getMap().put(p.getName().toString(), p.getType().getUeRef().getName());
 
-					RemoteUe ue = new RemoteUe();
-					ue.setName(p.getType().getUeRef().getName());
-					
-					// loop to the meta data of the UE
-					for (UEMetaObject obj: p.getType().getUeRef().getMeta()) {
-						if (obj.getParams() == UEPARAMS.IMEI) {
-							ue.setImei(obj.getParamValue());														
-						} else if (obj.getParams() == UEPARAMS.MSISDN) {
-							ue.setMsisdn(obj.getParamValue());
-						}
+				// Creates a new RemoteUE and sets its name to the the UE where the Parameter P refers to.
+				RemoteUe ue = new RemoteUe();
+				ue.setName(p.getType().getUeRef().getName());
+				
+				// loop to the meta data of the UE and store the IMEI and the MSISDN in the RemoteUE object.
+				for (UEMetaObject obj: p.getType().getUeRef().getMeta()) {
+					if (obj.getParams() == UEPARAMS.IMEI) {
+						ue.setImei(obj.getParamValue());														
+					} else if (obj.getParams() == UEPARAMS.MSISDN) {
+						ue.setMsisdn(obj.getParamValue());
 					}
-					// Store the UE into the UeMapin of the remoteAction. If there is already an UE with the same name, 
-					// than it is automatically skipped. (there can be only one object name in the same Map).
-					getRemoteAction().getUeMap().put(p.getType().getUeRef().getName(), ue);
 				}
+				// Store the UE into the UeMaping of the remoteAction. If there is already an UE with the same name, 
+				// than it is automatically skipped. (there can be only one object name in the same Map).
+				getRemoteAction().getUeMap().put(p.getType().getUeRef().getName(), ue);
+
 			} else if (p.getName().toString().equalsIgnoreCase("Duration") ||
-					p.getName().toString().equalsIgnoreCase("ResponseTime") ||
+					p.getName().toString().equalsIgnoreCase("TimeoutResponse") ||
+					p.getName().toString().equalsIgnoreCase("ResponseDuration") ||
 					p.getName().toString().equalsIgnoreCase("ServiceDelay") ||
-					p.getName().toString().equalsIgnoreCase("OffsetStart") ||
-					p.getName().toString().equalsIgnoreCase("OffsetEnd") ||
+					p.getName().toString().equalsIgnoreCase("OffsettimeStart") ||
+					p.getName().toString().equalsIgnoreCase("OffsettimeEnd") ||
 					p.getName().toString().equalsIgnoreCase("P1") ||
 					p.getName().toString().equalsIgnoreCase("P2") ||
 					p.getName().toString().equalsIgnoreCase("P3") ||
@@ -108,25 +114,25 @@ public class AndroidDispatcher extends AbstractDispatcher {
 				// Store the parameter in remoteAction
 				getRemoteAction().getMap().put(p.getName().toString(), String.valueOf(p.getType().getValue()));
 					
-			} else if (p.getName().toString().equalsIgnoreCase("Response")) {
-				if (p.getType().getResponse() != null) {
-					getRemoteAction().getMap().put (p.getName().toString(), p.getType().getResponse().toString());
-				}
-			} else if (p.getName().toString().equalsIgnoreCase("SMSDirection")) {
-				if (p.getType().getSmsDirection() != null) {
-					getRemoteAction().getMap().put (p.getName().toString(), p.getType().getSmsDirection().toString());
-				}
-			} else if (p.getName().toString().equalsIgnoreCase("UssdCode")) {
-				if (p.getType().getUssdCode() != null) {
-					getRemoteAction().getMap().put (p.getName().toString(), p.getType().getUssdCode().toString());
-				}
-			} else if (p.getName().toString().equalsIgnoreCase("MixerOption")) {
-				if (p.getType().getMixerOption() != null) {
-					getRemoteAction().getMap().put (p.getName().toString(), p.getType().getMixerOption().toString());
-				} else if (p.getName().toString().equalsIgnoreCase("Data")) {
-					getRemoteAction().getMap().put (p.getName().toString(), p.getType().getMessage());
-				}	
-			}	
+			} else if (p.getName().toString().equalsIgnoreCase("Response") && p.getType().getResponse() != null) {
+				getRemoteAction().getMap().put (p.getName().toString(), p.getType().getResponse().toString());
+			} else if (p.getName().toString().equalsIgnoreCase("Direction") && p.getType().getSmsDirection() != null) {
+				getRemoteAction().getMap().put (p.getName().toString(), p.getType().getSmsDirection().toString());
+			} else if (p.getName().toString().equalsIgnoreCase("UssdCode") && p.getType().getUssdCode() != null) {
+				getRemoteAction().getMap().put (p.getName().toString(), p.getType().getUssdCode().toString());
+			} else if (p.getName().toString().equalsIgnoreCase("MixerOption") && p.getType().getMixerOption() != null) {
+				getRemoteAction().getMap().put (p.getName().toString(), p.getType().getMixerOption().toString());
+			} else if (p.getName().toString().equalsIgnoreCase("Data") ||
+						p.getName().toString().equals("UssdCode") ||
+						p.getName().toString().equals("BarringCode") ||
+						p.getName().toString().equals("TimeServiceCode") ||
+						p.getName().toString().equalsIgnoreCase("URL")) {
+					getRemoteAction().getMap().put (p.getName().toString(), p.getType().getStringValue());	
+			} else if (p.getName().toString().equalsIgnoreCase("DataAction") && p.getType().getDataAction() != null) {
+				getRemoteAction().getMap().put (p.getName().toString(), p.getType().getDataAction().toString());
+			} else if (p.getName().toString().equalsIgnoreCase("USSDRegistration") && p.getType().getUssdRegistration() != null) {
+				getRemoteAction().getMap().put (p.getName().toString(), p.getType().getUssdRegistration().toString());
+			}
 		} 
 	}
 
@@ -211,10 +217,14 @@ public class AndroidDispatcher extends AbstractDispatcher {
 		
 		switch (action) {
 		case ADD:
+			if (jobs.isEmpty())
+				setJobsBusy (false);
 			jobs.add(name);
 			break;
 		case REMOVE:
 			jobs.remove(name);
+			if (jobs.isEmpty()) 
+				setJobsBusy(true);
 			break;
 		case READ:
 			if (!jobs.contains(name)) {
@@ -223,5 +233,14 @@ public class AndroidDispatcher extends AbstractDispatcher {
 			break;
 		}		
 		return isPresent;
+	}
+
+	/**
+	 * set or resets the NO_JOBS_BUSY static field. It it used by DragonXInvoker class to determine
+	 * if all the jobs are finished executing. If this is so, then a new script can be evaluated en executed.
+	 * @param set
+	 */
+	private synchronized void setJobsBusy (boolean set) {
+		NO_JOBS_BUSY = set;
 	}
 }
