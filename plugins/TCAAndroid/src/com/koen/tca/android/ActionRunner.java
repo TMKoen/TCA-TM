@@ -6,10 +6,21 @@ import java.util.Map;
 import android.content.Context;
 import android.os.Handler;
 
+import com.koen.tca.android.action.ActionANSWER;
+import com.koen.tca.android.action.ActionCALL;
+import com.koen.tca.android.action.ActionDATA;
+import com.koen.tca.android.action.ActionSMS;
+import com.koen.tca.android.action.ActionUSSD;
 import com.koen.tca.android.action.ITestAction;
+import com.koen.tca.common.message.IRemoteActionInfo;
 import com.koen.tca.common.message.RemoteAction;
+import com.koen.tca.common.message.RemoteAnswerInfo;
+import com.koen.tca.common.message.RemoteCallInfo;
+import com.koen.tca.common.message.RemoteDataInfo;
 import com.koen.tca.common.message.RemoteResults;
+import com.koen.tca.common.message.RemoteSmsInfo;
 import com.koen.tca.common.message.RemoteUe;
+import com.koen.tca.common.message.RemoteUssdInfo;
 
 /**
  * Singleton class that holds the action that de Android device must test.
@@ -130,18 +141,19 @@ public class ActionRunner {
 			results = new RemoteResults(action.getClass().getName());
 			results.setAction(remoteAction);
 
+			// create a new RemoteActionInfo
+			results.setActionInfo(setRemoteActionInfo(action));
 		
-			if (action.getParameters().get("OffsetStart") != null) {
+			if (action.getParameters().get("OffsettimeStart") != null) {
 
 				// Gets the offset time in milliseconds that the thread must wait before the test must start.
 				long offsetInMilliseconds;
 				try {
-					offsetInMilliseconds = Integer.valueOf(action.getParameters().get("OffsetStart")) * 1000;
+					offsetInMilliseconds = Integer.valueOf(action.getParameters().get("OffsettimeStart")) * 1000;
 				} catch (NumberFormatException e) {
 					// the OffsetStart parameter was not an integer.
 					offsetInMilliseconds = 0;
-				}
-				
+				}	
 				
 				@SuppressWarnings("unused")
 				Date end = null;
@@ -174,12 +186,12 @@ public class ActionRunner {
 				results.setNetworkInfoAfter(((TcaMainActivity) getContext()).getNetworkInfo());				
 			}
 			
-			if (action.getParameters().get("OffsetEnd") != null) {
+			if (action.getParameters().get("OffsettimeEnd") != null) {
 
 				// Gets the offset time in milliseconds that the thread must wait before the test must end.
 				long offsetInMilliseconds;
 				try {
-					offsetInMilliseconds = Integer.valueOf(action.getParameters().get("OffsetEnd")) * 1000;
+					offsetInMilliseconds = Integer.valueOf(action.getParameters().get("OffsettimeEnd")) * 1000;
 				} catch (NumberFormatException e) {
 					// the OffsetStart parameter was not an integer.
 					offsetInMilliseconds = 0;
@@ -215,6 +227,29 @@ public class ActionRunner {
 	public synchronized RemoteResults getResults () {
 		// TODO: multiple copies by multiple threads??
 		return results;
+	}
+
+	/**
+	 * creates a new RemoteActionInfo object, that is depending of the present action object.
+	 * @version 1.0
+	 * @author Koen Nijmeijer
+	 * @param action
+	 * @return the RemoteActionInfo
+	 */
+	private IRemoteActionInfo setRemoteActionInfo (ITestAction action) {
+		IRemoteActionInfo remoteActionInfo= null;
+		if (action instanceof ActionCALL)
+			remoteActionInfo = new RemoteCallInfo ();
+		else if (action instanceof ActionANSWER)
+			remoteActionInfo = new RemoteAnswerInfo ();
+		else if (action instanceof ActionDATA)
+			remoteActionInfo = new RemoteDataInfo ();
+		else if (action instanceof ActionSMS)
+		remoteActionInfo = new RemoteSmsInfo ();
+		else if (action instanceof ActionUSSD)
+			remoteActionInfo = new RemoteUssdInfo ();
+			
+		return remoteActionInfo;
 	}
 	
 	public synchronized void clean () {

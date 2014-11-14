@@ -34,8 +34,6 @@ public class ActionSMS  implements ITestAction {
 	public ActionSMS () {
 		this.isFinished = false;
 		
-		// Create a RemoteSmsInfo in the results.
-		actionRunner.getResults().setActionInfo(new RemoteSmsInfo());
 	}
 
 	public synchronized void isFinished () {
@@ -52,20 +50,27 @@ public class ActionSMS  implements ITestAction {
 	public void startTest(Handler mainActivityHandler) {
 
 		// The destination UE where the SMS must be send to.
+		String from = null;
+		String to = null;
 		String source = null;
-		String destination = null;
-		
+
 		// The message to be send. 
 		String message = DEFAULT_MESSAGE;
 
+		
 		// Find the source UE (this UE).
 		if (parameters.get("From") != null) {
-			source = (ueParameters.get(parameters.get("From"))).getMsisdn();
+			from = (ueParameters.get(parameters.get("From"))).getMsisdn();
 		}
 		
 		// Find the destination UE.
 		if (parameters.get("To") != null) {
-		destination = (ueParameters.get(parameters.get("To"))).getMsisdn();  	
+			to = (ueParameters.get(parameters.get("To"))).getMsisdn();  	
+		}
+
+		// source is the UE that sends a SMS to this UE.
+		if (parameters.get("Source") != null) {
+			source = (ueParameters.get(parameters.get("Source"))).getMsisdn();
 		}
 
 		// Find the message or if not found, there is a default message String.
@@ -74,17 +79,17 @@ public class ActionSMS  implements ITestAction {
 		}
 		
 		if (actionRunner.getContext() != null) {
-			if (parameters.get("SMSDirection") != null) {
-				if (parameters.get("SMSDirection").equalsIgnoreCase("Send")) {
+			if (parameters.get("Direction") != null) {
+				if (parameters.get("Direction").equalsIgnoreCase("Send")) {
 
-					if (destination != null) {
-						sendSMS (actionRunner.getContext(), source, destination, message);
+					if (to != null) {
+						sendSMS (actionRunner.getContext(), from, to, message);
 					}
-				} else if (parameters.get("SMSDirection").equalsIgnoreCase("Receive")) {
-						receiveSMS(actionRunner.getContext());
+				} else if (parameters.get("Direction").equalsIgnoreCase("Receive")) {
+						receiveSMS(actionRunner.getContext(), source);
 					
-				} else if (parameters.get("SMSDirection").equalsIgnoreCase("SendAndReceive")) {
-					
+				} else if (parameters.get("Direction").equalsIgnoreCase("SendAndReceive")) {
+					// TODO
 				}
 			}
 		}
@@ -192,12 +197,12 @@ public class ActionSMS  implements ITestAction {
 	}
 
 	/**
-	 * Receive a SMS.
+	 * Receive a SMS from an UE referred by the source parameter..
 	 * @version 1.0
 	 * @author Koen Nijmeijer
 	 * @param context
 	 */
-	public void receiveSMS (Context context) {
+	public void receiveSMS (Context context, String source) {
 		final String ACTION = "android.provider.Telephony.SMS_RECEIVED";
 
 		// Register the receiver for an SMS received signal from the Telephony manager.
@@ -207,11 +212,14 @@ public class ActionSMS  implements ITestAction {
 		
 		long elapsedTme = 0;
 		long durationInMilliseconds = 0;
-		if (parameters.get("Duratation") != null) {
+
+		if (parameters.get("Duration") != null) {
+		
+//		if (Long.valueOf(parameters.get("Duratation") ) > 0) {
 			
 			// Gets the duration parameter and change it in seconds.
 			try {
-				durationInMilliseconds = Integer.valueOf(parameters.get("Duration")) * 1000;
+				durationInMilliseconds = Long.valueOf(parameters.get("Duration")) * 1000;
 				
 				Date start = new Date();
 				@SuppressWarnings("unused")
